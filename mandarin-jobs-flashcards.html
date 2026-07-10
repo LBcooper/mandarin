@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin Jobs Flashcards</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front {
+    background: #18181f;
+  }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.8rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>职业卡片</h1>
+<p class="subtitle">Mandarin Jobs Flashcards</p>
+
+<div class="category-filter" id="filters"></div>
+
+<div class="counter" id="counter">Card 1 of 80</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" id="scene" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <div class="hanzi" id="hanzi">医生</div>
+     
+      <div class="category-badge" id="cat-front">Healthcare</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+       <div class="pinyin" id="pinyin">yīshēng</div>
+      <div class="english" id="english">Doctor</div>
+      <div class="category-badge" id="cat-back">Healthcare</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+
+<script>
+const ALL_CARDS = [
+  { hanzi:"医生", pinyin:"yīshēng", english:"Doctor", cat:"Healthcare" },
+  { hanzi:"护士", pinyin:"hùshi", english:"Nurse", cat:"Healthcare" },
+  { hanzi:"牙医", pinyin:"yáyī", english:"Dentist", cat:"Healthcare" },
+  { hanzi:"药剂师", pinyin:"yàojìshī", english:"Pharmacist", cat:"Healthcare" },
+  { hanzi:"外科医生", pinyin:"wàikē yīshēng", english:"Surgeon", cat:"Healthcare" },
+  { hanzi:"心理学家", pinyin:"xīnlǐxuéjiā", english:"Psychologist", cat:"Healthcare" },
+  { hanzi:"兽医", pinyin:"shòuyī", english:"Veterinarian", cat:"Healthcare" },
+  { hanzi:"物理治疗师", pinyin:"wùlǐ zhìliáoshī", english:"Physiotherapist", cat:"Healthcare" },
+
+  { hanzi:"老师", pinyin:"lǎoshī", english:"Teacher", cat:"Education" },
+  { hanzi:"教授", pinyin:"jiàoshòu", english:"Professor", cat:"Education" },
+  { hanzi:"校长", pinyin:"xiàozhǎng", english:"Principal", cat:"Education" },
+  { hanzi:"图书管理员", pinyin:"túshū guǎnlǐyuán", english:"Librarian", cat:"Education" },
+  { hanzi:"辅导员", pinyin:"fǔdǎoyuán", english:"Counselor", cat:"Education" },
+
+  { hanzi:"律师", pinyin:"lǜshī", english:"Lawyer", cat:"Law & Gov" },
+  { hanzi:"法官", pinyin:"fǎguān", english:"Judge", cat:"Law & Gov" },
+  { hanzi:"警察", pinyin:"jǐngchá", english:"Police Officer", cat:"Law & Gov" },
+  { hanzi:"消防员", pinyin:"xiāofángyuán", english:"Firefighter", cat:"Law & Gov" },
+  { hanzi:"士兵", pinyin:"shìbīng", english:"Soldier", cat:"Law & Gov" },
+  { hanzi:"外交官", pinyin:"wàijiāoguān", english:"Diplomat", cat:"Law & Gov" },
+  { hanzi:"政治家", pinyin:"zhèngzhìjiā", english:"Politician", cat:"Law & Gov" },
+
+  { hanzi:"工程师", pinyin:"gōngchéngshī", english:"Engineer", cat:"Tech & Science" },
+  { hanzi:"程序员", pinyin:"chéngxùyuán", english:"Programmer", cat:"Tech & Science" },
+  { hanzi:"科学家", pinyin:"kēxuéjiā", english:"Scientist", cat:"Tech & Science" },
+  { hanzi:"数据分析师", pinyin:"shùjù fēnxīshī", english:"Data Analyst", cat:"Tech & Science" },
+  { hanzi:"建筑师", pinyin:"jiànzhùshī", english:"Architect", cat:"Tech & Science" },
+  { hanzi:"电气工程师", pinyin:"diànqì gōngchéngshī", english:"Electrical Engineer", cat:"Tech & Science" },
+  { hanzi:"化学家", pinyin:"huàxuéjiā", english:"Chemist", cat:"Tech & Science" },
+  { hanzi:"物理学家", pinyin:"wùlǐxuéjiā", english:"Physicist", cat:"Tech & Science" },
+  { hanzi:"生物学家", pinyin:"shēngwùxuéjiā", english:"Biologist", cat:"Tech & Science" },
+  { hanzi:"天文学家", pinyin:"tiānwénxuéjiā", english:"Astronomer", cat:"Tech & Science" },
+
+  { hanzi:"厨师", pinyin:"chúshī", english:"Chef / Cook", cat:"Food & Service" },
+  { hanzi:"服务员", pinyin:"fúwùyuán", english:"Waiter / Server", cat:"Food & Service" },
+  { hanzi:"面包师", pinyin:"miànbāoshī", english:"Baker", cat:"Food & Service" },
+  { hanzi:"咖啡师", pinyin:"kāfēishī", english:"Barista", cat:"Food & Service" },
+  { hanzi:"调酒师", pinyin:"tiáojiǔshī", english:"Bartender", cat:"Food & Service" },
+  { hanzi:"清洁工", pinyin:"qīngjiégōng", english:"Cleaner", cat:"Food & Service" },
+  { hanzi:"保安", pinyin:"bǎo'ān", english:"Security Guard", cat:"Food & Service" },
+
+  { hanzi:"商人", pinyin:"shāngrén", english:"Businessman", cat:"Business" },
+  { hanzi:"经理", pinyin:"jīnglǐ", english:"Manager", cat:"Business" },
+  { hanzi:"会计师", pinyin:"kuàijìshī", english:"Accountant", cat:"Business" },
+  { hanzi:"银行家", pinyin:"yínhángjiā", english:"Banker", cat:"Business" },
+  { hanzi:"销售员", pinyin:"xiāoshòuyuán", english:"Salesperson", cat:"Business" },
+  { hanzi:"秘书", pinyin:"mìshū", english:"Secretary", cat:"Business" },
+  { hanzi:"人事专员", pinyin:"rénshì zhuānyuán", english:"HR Specialist", cat:"Business" },
+  { hanzi:"市场专员", pinyin:"shìchǎng zhuānyuán", english:"Marketing Specialist", cat:"Business" },
+  { hanzi:"企业家", pinyin:"qǐyèjiā", english:"Entrepreneur", cat:"Business" },
+  { hanzi:"首席执行官", pinyin:"shǒuxí zhíxínguān", english:"CEO", cat:"Business" },
+
+  { hanzi:"艺术家", pinyin:"yìshùjiā", english:"Artist", cat:"Arts & Media" },
+  { hanzi:"音乐家", pinyin:"yīnyuèjiā", english:"Musician", cat:"Arts & Media" },
+  { hanzi:"歌手", pinyin:"gēshǒu", english:"Singer", cat:"Arts & Media" },
+  { hanzi:"演员", pinyin:"yǎnyuán", english:"Actor / Actress", cat:"Arts & Media" },
+  { hanzi:"舞蹈家", pinyin:"wǔdǎojiā", english:"Dancer", cat:"Arts & Media" },
+  { hanzi:"摄影师", pinyin:"shèyǐngshī", english:"Photographer", cat:"Arts & Media" },
+  { hanzi:"设计师", pinyin:"shèjìshī", english:"Designer", cat:"Arts & Media" },
+  { hanzi:"作家", pinyin:"zuòjiā", english:"Writer / Author", cat:"Arts & Media" },
+  { hanzi:"记者", pinyin:"jìzhě", english:"Journalist", cat:"Arts & Media" },
+  { hanzi:"编辑", pinyin:"biānjí", english:"Editor", cat:"Arts & Media" },
+  { hanzi:"导演", pinyin:"dǎoyǎn", english:"Film Director", cat:"Arts & Media" },
+
+  { hanzi:"司机", pinyin:"sījī", english:"Driver", cat:"Transport" },
+  { hanzi:"飞行员", pinyin:"fēixíngyuán", english:"Pilot", cat:"Transport" },
+  { hanzi:"船长", pinyin:"chuánzhǎng", english:"Ship Captain", cat:"Transport" },
+  { hanzi:"快递员", pinyin:"kuàidìyuán", english:"Delivery Person", cat:"Transport" },
+  { hanzi:"出租车司机", pinyin:"chūzūchē sījī", english:"Taxi Driver", cat:"Transport" },
+  { hanzi:"列车长", pinyin:"lièchēzhǎng", english:"Train Conductor", cat:"Transport" },
+
+  { hanzi:"农民", pinyin:"nóngmín", english:"Farmer", cat:"Trades" },
+  { hanzi:"渔民", pinyin:"yúmín", english:"Fisherman", cat:"Trades" },
+  { hanzi:"木匠", pinyin:"mùjiàng", english:"Carpenter", cat:"Trades" },
+  { hanzi:"水管工", pinyin:"shuǐguǎngōng", english:"Plumber", cat:"Trades" },
+  { hanzi:"电工", pinyin:"diàngōng", english:"Electrician", cat:"Trades" },
+  { hanzi:"焊接工", pinyin:"hànjiēgōng", english:"Welder", cat:"Trades" },
+  { hanzi:"裁缝", pinyin:"cáifeng", english:"Tailor", cat:"Trades" },
+  { hanzi:"美发师", pinyin:"měifàshī", english:"Hairdresser", cat:"Trades" },
+  { hanzi:"理发师", pinyin:"lǐfàshī", english:"Barber", cat:"Trades" },
+  { hanzi:"矿工", pinyin:"kuànggōng", english:"Miner", cat:"Trades" },
+
+  { hanzi:"运动员", pinyin:"yùndòngyuán", english:"Athlete", cat:"Sports & Other" },
+  { hanzi:"教练", pinyin:"jiàoliàn", english:"Coach / Trainer", cat:"Sports & Other" },
+  { hanzi:"裁判", pinyin:"cáipàn", english:"Referee", cat:"Sports & Other" },
+  { hanzi:"模特", pinyin:"mótè", english:"Model", cat:"Sports & Other" },
+  { hanzi:"社会工作者", pinyin:"shèhuì gōngzuòzhě", english:"Social Worker", cat:"Sports & Other" },
+  { hanzi:"翻译", pinyin:"fānyì", english:"Translator / Interpreter", cat:"Sports & Other" },
+];
+
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>

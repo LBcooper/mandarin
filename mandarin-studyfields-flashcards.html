@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin Study Fields Flashcards</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front { background: #18181f; }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.2rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 0 1.5rem;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 520px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>学科卡片</h1>
+<p class="subtitle">Mandarin Study Fields Flashcards</p>
+
+<div class="category-filter" id="filters"></div>
+
+<div class="counter" id="counter">Card 1 of 90</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <div class="hanzi" id="hanzi">数学</div>
+      <div class="category-badge" id="cat-front">Sciences</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+            <div class="pinyin" id="pinyin">shùxué</div>
+      <div class="english" id="english">Mathematics</div>
+      <div class="category-badge" id="cat-back">Sciences</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+
+<script>
+const ALL_CARDS = [
+  { hanzi:"数学", pinyin:"shùxué", english:"Mathematics", cat:"Sciences" },
+  { hanzi:"物理", pinyin:"wùlǐ", english:"Physics", cat:"Sciences" },
+  { hanzi:"化学", pinyin:"huàxué", english:"Chemistry", cat:"Sciences" },
+  { hanzi:"生物学", pinyin:"shēngwùxué", english:"Biology", cat:"Sciences" },
+  { hanzi:"统计学", pinyin:"tǒngjìxué", english:"Statistics", cat:"Sciences" },
+  { hanzi:"天文学", pinyin:"tiānwénxué", english:"Astronomy", cat:"Sciences" },
+  { hanzi:"地质学", pinyin:"dìzhìxué", english:"Geology", cat:"Sciences" },
+  { hanzi:"环境科学", pinyin:"huánjìng kēxué", english:"Environmental Science", cat:"Sciences" },
+  { hanzi:"海洋学", pinyin:"hǎiyángxué", english:"Oceanography", cat:"Sciences" },
+  { hanzi:"气象学", pinyin:"qìxiàngxué", english:"Meteorology", cat:"Sciences" },
+  { hanzi:"微生物学", pinyin:"wēishēngwùxué", english:"Microbiology", cat:"Sciences" },
+  { hanzi:"遗传学", pinyin:"yíchuánxué", english:"Genetics", cat:"Sciences" },
+
+  { hanzi:"医学", pinyin:"yīxué", english:"Medicine", cat:"Health & Medicine" },
+  { hanzi:"护理学", pinyin:"hùlǐxué", english:"Nursing", cat:"Health & Medicine" },
+  { hanzi:"药学", pinyin:"yàoxué", english:"Pharmacy", cat:"Health & Medicine" },
+  { hanzi:"牙科学", pinyin:"yákēxué", english:"Dentistry", cat:"Health & Medicine" },
+  { hanzi:"公共卫生", pinyin:"gōnggòng wèishēng", english:"Public Health", cat:"Health & Medicine" },
+  { hanzi:"营养学", pinyin:"yíngyǎngxué", english:"Nutrition", cat:"Health & Medicine" },
+  { hanzi:"心理学", pinyin:"xīnlǐxué", english:"Psychology", cat:"Health & Medicine" },
+  { hanzi:"物理治疗", pinyin:"wùlǐ zhìliáo", english:"Physical Therapy", cat:"Health & Medicine" },
+
+  { hanzi:"工程学", pinyin:"gōngchéngxué", english:"Engineering", cat:"Engineering & Tech" },
+  { hanzi:"计算机科学", pinyin:"jìsuànjī kēxué", english:"Computer Science", cat:"Engineering & Tech" },
+  { hanzi:"电气工程", pinyin:"diànqì gōngchéng", english:"Electrical Engineering", cat:"Engineering & Tech" },
+  { hanzi:"机械工程", pinyin:"jīxiè gōngchéng", english:"Mechanical Engineering", cat:"Engineering & Tech" },
+  { hanzi:"土木工程", pinyin:"tǔmù gōngchéng", english:"Civil Engineering", cat:"Engineering & Tech" },
+  { hanzi:"化学工程", pinyin:"huàxué gōngchéng", english:"Chemical Engineering", cat:"Engineering & Tech" },
+  { hanzi:"航空工程", pinyin:"hángkōng gōngchéng", english:"Aerospace Engineering", cat:"Engineering & Tech" },
+  { hanzi:"人工智能", pinyin:"réngōng zhìnéng", english:"Artificial Intelligence", cat:"Engineering & Tech" },
+  { hanzi:"信息技术", pinyin:"xìnxī jìshù", english:"Information Technology", cat:"Engineering & Tech" },
+  { hanzi:"网络安全", pinyin:"wǎngluò ānquán", english:"Cybersecurity", cat:"Engineering & Tech" },
+  { hanzi:"数据科学", pinyin:"shùjù kēxué", english:"Data Science", cat:"Engineering & Tech" },
+
+  { hanzi:"商业", pinyin:"shāngyè", english:"Business", cat:"Business" },
+  { hanzi:"经济学", pinyin:"jīngjìxué", english:"Economics", cat:"Business" },
+  { hanzi:"会计学", pinyin:"kuàijìxué", english:"Accounting", cat:"Business" },
+  { hanzi:"金融学", pinyin:"jīnróngxué", english:"Finance", cat:"Business" },
+  { hanzi:"市场营销", pinyin:"shìchǎng yíngxiāo", english:"Marketing", cat:"Business" },
+  { hanzi:"工商管理", pinyin:"gōngshāng guǎnlǐ", english:"Business Administration", cat:"Business" },
+  { hanzi:"国际贸易", pinyin:"guójì màoyì", english:"International Trade", cat:"Business" },
+  { hanzi:"人力资源管理", pinyin:"rénlì zīyuán guǎnlǐ", english:"Human Resources", cat:"Business" },
+  { hanzi:"物流管理", pinyin:"wùliú guǎnlǐ", english:"Logistics Management", cat:"Business" },
+  { hanzi:"房地产", pinyin:"fángdìchǎn", english:"Real Estate", cat:"Business" },
+
+  { hanzi:"法律", pinyin:"fǎlǜ", english:"Law", cat:"Law & Politics" },
+  { hanzi:"国际法", pinyin:"guójìfǎ", english:"International Law", cat:"Law & Politics" },
+  { hanzi:"政治学", pinyin:"zhèngzhìxué", english:"Political Science", cat:"Law & Politics" },
+  { hanzi:"国际关系", pinyin:"guójì guānxi", english:"International Relations", cat:"Law & Politics" },
+  { hanzi:"公共政策", pinyin:"gōnggòng zhèngcè", english:"Public Policy", cat:"Law & Politics" },
+  { hanzi:"犯罪学", pinyin:"fànzuìxué", english:"Criminology", cat:"Law & Politics" },
+
+  { hanzi:"文学", pinyin:"wénxué", english:"Literature", cat:"Humanities" },
+  { hanzi:"哲学", pinyin:"zhéxué", english:"Philosophy", cat:"Humanities" },
+  { hanzi:"历史", pinyin:"lìshǐ", english:"History", cat:"Humanities" },
+  { hanzi:"语言学", pinyin:"yǔyánxué", english:"Linguistics", cat:"Humanities" },
+  { hanzi:"人类学", pinyin:"rénlèixué", english:"Anthropology", cat:"Humanities" },
+  { hanzi:"考古学", pinyin:"kǎogǔxué", english:"Archaeology", cat:"Humanities" },
+  { hanzi:"宗教学", pinyin:"zōngjiàoxué", english:"Religious Studies", cat:"Humanities" },
+  { hanzi:"文化研究", pinyin:"wénhuà yánjiū", english:"Cultural Studies", cat:"Humanities" },
+  { hanzi:"地理学", pinyin:"dìlǐxué", english:"Geography", cat:"Humanities" },
+  { hanzi:"社会学", pinyin:"shèhuìxué", english:"Sociology", cat:"Humanities" },
+
+  { hanzi:"美术", pinyin:"měishù", english:"Fine Arts", cat:"Arts & Design" },
+  { hanzi:"音乐", pinyin:"yīnyuè", english:"Music", cat:"Arts & Design" },
+  { hanzi:"舞蹈", pinyin:"wǔdǎo", english:"Dance", cat:"Arts & Design" },
+  { hanzi:"戏剧", pinyin:"xìjù", english:"Theatre / Drama", cat:"Arts & Design" },
+  { hanzi:"电影学", pinyin:"diànyǐngxué", english:"Film Studies", cat:"Arts & Design" },
+  { hanzi:"摄影", pinyin:"shèyǐng", english:"Photography", cat:"Arts & Design" },
+  { hanzi:"平面设计", pinyin:"píngyuán shèjì", english:"Graphic Design", cat:"Arts & Design" },
+  { hanzi:"时装设计", pinyin:"shízhuāng shèjì", english:"Fashion Design", cat:"Arts & Design" },
+  { hanzi:"室内设计", pinyin:"shìnèi shèjì", english:"Interior Design", cat:"Arts & Design" },
+  { hanzi:"建筑学", pinyin:"jiànzhùxué", english:"Architecture", cat:"Arts & Design" },
+
+  { hanzi:"教育学", pinyin:"jiàoyùxué", english:"Education", cat:"Education & Social" },
+  { hanzi:"特殊教育", pinyin:"tèshū jiàoyù", english:"Special Education", cat:"Education & Social" },
+  { hanzi:"早期教育", pinyin:"zǎoqī jiàoyù", english:"Early Childhood Education", cat:"Education & Social" },
+  { hanzi:"社会工作", pinyin:"shèhuì gōngzuò", english:"Social Work", cat:"Education & Social" },
+  { hanzi:"体育", pinyin:"tǐyù", english:"Physical Education", cat:"Education & Social" },
+  { hanzi:"运动科学", pinyin:"yùndòng kēxué", english:"Sports Science", cat:"Education & Social" },
+  { hanzi:"传播学", pinyin:"chuánbōxué", english:"Communications", cat:"Education & Social" },
+  { hanzi:"新闻学", pinyin:"xīnwénxué", english:"Journalism", cat:"Education & Social" },
+
+  { hanzi:"农业", pinyin:"nóngyè", english:"Agriculture", cat:"Applied Fields" },
+  { hanzi:"食品科学", pinyin:"shípǐn kēxué", english:"Food Science", cat:"Applied Fields" },
+  { hanzi:"林业", pinyin:"línyè", english:"Forestry", cat:"Applied Fields" },
+  { hanzi:"兽医学", pinyin:"shòuyīxué", english:"Veterinary Science", cat:"Applied Fields" },
+  { hanzi:"旅游管理", pinyin:"lǚyóu guǎnlǐ", english:"Tourism Management", cat:"Applied Fields" },
+  { hanzi:"酒店管理", pinyin:"jiǔdiàn guǎnlǐ", english:"Hotel Management", cat:"Applied Fields" },
+  { hanzi:"航海学", pinyin:"hánghǎixué", english:"Maritime Studies", cat:"Applied Fields" },
+];
+
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>
