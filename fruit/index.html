@@ -207,13 +207,13 @@
 </style>
 </head>
 <body>
-<h1>厨房用语</h1>
-<p class="subtitle">Mandarin Kitchen Vocabulary</p>
+<h1>水果用语</h1>
+<p class="subtitle">Mandarin Fruit Vocabulary</p>
 
 <div class="category-filter" id="filters"></div>
 
-<!-- Updated to 26 cards based on the array length -->
-<div class="counter" id="counter">Card 1 of 26</div>
+<!-- Updated to 25 cards based on the array length -->
+<div class="counter" id="counter">Card 1 of 25</div>
 
 <div class="progress-bar">
   <div class="progress-fill" id="progress"></div>
@@ -224,14 +224,14 @@
     <div class="face face-front">
       <span class="hint">tap to reveal</span>
       <!-- Placeholder updated to match the first card in the array -->
-      <div class="hanzi" id="hanzi">刀</div>
-      <div class="category-badge" id="cat-front">Utensils & Tableware</div>
+      <div class="hanzi" id="hanzi">苹果</div>
+      <div class="category-badge" id="cat-front">Common Fruits</div>
     </div>
     <div class="face face-back">
       <span class="hint">english</span>
-      <div class="pinyin" id="pinyin">dāo</div>
-      <div class="english" id="english">Knife</div>
-      <div class="category-badge" id="cat-back">Utensils & Tableware</div>
+      <div class="pinyin" id="pinyin">píngguǒ</div>
+      <div class="english" id="english">Apple</div>
+      <div class="category-badge" id="cat-back">Common Fruits</div>
     </div>
   </div>
 </div>
@@ -243,36 +243,37 @@
   <button onclick="shuffle()" class="primary">Shuffle</button>
   <button onclick="next()">Next →</button>
 </div>
+
 <script>
+
 const ALL_CARDS = [
-  { hanzi: "刀", pinyin: "dāo", english: "Knife", cat: "Utensils & Tableware" },
-  { hanzi: "菜刀", pinyin: "càidāo", english: "Kitchen knife", cat: "Utensils & Tableware" },
-  { hanzi: "砧板 / 切菜板", pinyin: "zhēnbǎn / qiē cài bǎn", english: "Cutting board", cat: "Utensils & Tableware" },
-  { hanzi: "叉子", pinyin: "chāzi", english: "Fork", cat: "Utensils & Tableware" },
-  { hanzi: "勺子", pinyin: "sháozi", english: "Spoon", cat: "Utensils & Tableware" },
-  { hanzi: "筷子", pinyin: "kuàizi", english: "Chopsticks", cat: "Utensils & Tableware" },
-  { hanzi: "铲子", pinyin: "chǎnzi", english: "Spatula", cat: "Utensils & Tableware" },
-  { hanzi: "盘子", pinyin: "pánzi", english: "Plate", cat: "Utensils & Tableware" },
-  { hanzi: "塑料盘子", pinyin: "sùliào pánzi", english: "Plastic plate", cat: "Utensils & Tableware" },
-  { hanzi: "陶瓷盘子", pinyin: "táocí pánzi", english: "Ceramic plate", cat: "Utensils & Tableware" },
-  { hanzi: "钢板", pinyin: "gāngbǎn", english: "Steel plate", cat: "Utensils & Tableware" },
-  { hanzi: "碗", pinyin: "wǎn", english: "Bowl", cat: "Utensils & Tableware" },
-  { hanzi: "杯子", pinyin: "bēizi", english: "Cup / glass", cat: "Utensils & Tableware" },
+  { hanzi: "苹果", pinyin: "píngguǒ", english: "Apple", cat: "Common Fruits" },
+  { hanzi: "香蕉", pinyin: "xiāngjiāo", english: "Banana", cat: "Common Fruits" },
+  { hanzi: "橙子", pinyin: "chéngzi", english: "Orange", cat: "Common Fruits" },
+  { hanzi: "草莓", pinyin: "cǎoméi", english: "Strawberry", cat: "Common Fruits" },
+  { hanzi: "葡萄", pinyin: "pútáo", english: "Grape", cat: "Common Fruits" },
+  { hanzi: "西瓜", pinyin: "xīguā", english: "Watermelon", cat: "Common Fruits" },
+  { hanzi: "桃子", pinyin: "táozi", english: "Peach", cat: "Common Fruits" },
+  { hanzi: "芒果", pinyin: "mángguǒ", english: "Mango", cat: "Common Fruits" },
+  { hanzi: "李子", pinyin: "lǐzi", english: "Plum", cat: "Common Fruits" },
 
-  { hanzi: "锅", pinyin: "guō", english: "Pot", cat: "Appliances & Cookware" },
-  { hanzi: "炒锅", pinyin: "chǎoguō", english: "Wok", cat: "Appliances & Cookware" },
-  { hanzi: "平底锅", pinyin: "píngdǐguō", english: "Frying pan", cat: "Appliances & Cookware" },
-  { hanzi: "蒸锅", pinyin: "zhēngguō", english: "Steamer", cat: "Appliances & Cookware" },
-  { hanzi: "烤箱", pinyin: "kǎoxiāng", english: "Oven", cat: "Appliances & Cookware" },
-  { hanzi: "电饭煲", pinyin: "diànfànbāo", english: "Rice cooker", cat: "Appliances & Cookware" },
-  { hanzi: "微波炉", pinyin: "wéibōlú", english: "Microwave", cat: "Appliances & Cookware" },
-  { hanzi: "洗碗机", pinyin: "xǐwǎnjī", english: "Dishwasher", cat: "Appliances & Cookware" },
-  { hanzi: "火炉 / 炉子 / 灶", pinyin: "huǒlú / lúzi / zào", english: "Stove", cat: "Appliances & Cookware" },
-  { hanzi: "冰箱", pinyin: "bīngxiāng", english: "Refrigerator", cat: "Appliances & Cookware" },
-  { hanzi: "水槽", pinyin: "shuǐcáo", english: "Sink", cat: "Appliances & Cookware" },
+  { hanzi: "蓝莓", pinyin: "lánméi", english: "Blueberry", cat: "Berries & Citrus" },
+  { hanzi: "树莓 / 覆盆子", pinyin: "shùméi / fùpénzǐ", english: "Raspberry", cat: "Berries & Citrus" },
+  { hanzi: "樱桃", pinyin: "yīngtáo", english: "Cherry", cat: "Berries & Citrus" },
+  { hanzi: "柠檬", pinyin: "níngméng", english: "Lemon", cat: "Berries & Citrus" },
+  { hanzi: "青柠", pinyin: "qīngníng", english: "Lime", cat: "Berries & Citrus" },
 
-  { hanzi: "抹布", pinyin: "mābù", english: "Dishcloth", cat: "Other Kitchen Items" },
-  { hanzi: "围裙", pinyin: "wéiqún", english: "Apron", cat: "Other Kitchen Items" }
+  { hanzi: "菠萝 / 凤梨", pinyin: "bōluó / fènglǐ", english: "Pineapple", cat: "Tropical Fruits" },
+  { hanzi: "牛油果 / 鳄梨", pinyin: "niúyóuguǒ / èlí", english: "Avocado", cat: "Tropical Fruits" },
+  { hanzi: "猕猴桃 / 奇异果", pinyin: "míhóutáo / qíyìguǒ", english: "Kiwi", cat: "Tropical Fruits" },
+  { hanzi: "火龙果", pinyin: "huǒlóngguǒ", english: "Dragon fruit", cat: "Tropical Fruits" },
+  { hanzi: "荔枝", pinyin: "lìzhī", english: "Lychee", cat: "Tropical Fruits" },
+  { hanzi: "榴莲", pinyin: "liúlián", english: "Durian", cat: "Tropical Fruits" },
+  { hanzi: "红毛丹", pinyin: "hóngmáodān", english: "Rambutan", cat: "Tropical Fruits" },
+  { hanzi: "番石榴", pinyin: "fānshíliu", english: "Guava", cat: "Tropical Fruits" },
+  { hanzi: "杨桃", pinyin: "yángtáo", english: "Star fruit", cat: "Tropical Fruits" },
+  { hanzi: "椰子", pinyin: "yēzi", english: "Coconut", cat: "Tropical Fruits" },
+  { hanzi: "木瓜", pinyin: "mùguā", english: "Papaya", cat: "Tropical Fruits" }
 ];
 
 const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];

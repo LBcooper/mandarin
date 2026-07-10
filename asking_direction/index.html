@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin everyday word flashcard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front {
+    background: #18181f;
+  }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.8rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<h1>最基础的方向指引</h1>
+<p class="subtitle">Mandarin Directions Vocabulary</p>
+
+<div class="category-filter" id="filters"></div>
+
+<!-- Updated to 30 cards based on the array length -->
+<div class="counter" id="counter">Card 1 of 30</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" id="scene" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <!-- Placeholder updated to match the first card in the array -->
+      <div class="hanzi" id="hanzi">请问</div>
+     
+      <div class="category-badge" id="cat-front">Directions</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+       <div class="pinyin" id="pinyin">qǐng wèn</div>
+      <div class="english" id="english">Excuse me (polite opener)</div>
+      <div class="category-badge" id="cat-back">Directions</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+
+<script>
+const ALL_CARDS = [
+  { hanzi: "请问", pinyin: "qǐng wèn", english: "Excuse me (polite opener)", cat: "Directions" },
+  { hanzi: "怎么走", pinyin: "zěnme zǒu", english: "How do I get to...?", cat: "Directions" },
+  { hanzi: "在哪里 / 在哪儿", pinyin: "zài nǎlǐ / zài nǎr", english: "Where is...?", cat: "Directions" },
+  { hanzi: "离这里远吗", pinyin: "lí zhèlǐ yuǎn ma", english: "Is it far from here?", cat: "Directions" },
+  { hanzi: "走路能到吗", pinyin: "zǒulù néng dào ma", english: "Can I get there on foot?", cat: "Directions" },
+  { hanzi: "最近的...在哪里", pinyin: "zuìjìn de...zài nǎlǐ", english: "Where's the nearest...?", cat: "Directions" },
+  { hanzi: "你能带我去吗", pinyin: "nǐ néng dài wǒ qù ma", english: "Can you take me there?", cat: "Directions" },
+  { hanzi: "一直走", pinyin: "yìzhí zǒu", english: "Go straight", cat: "Directions" },
+  { hanzi: "往前走", pinyin: "wǎng qián zǒu", english: "Go forward", cat: "Directions" },
+  { hanzi: "左转 / 向左转", pinyin: "zuǒ zhuǎn / xiàng zuǒ zhuǎn", english: "Turn left", cat: "Directions" },
+  { hanzi: "右转 / 向右转", pinyin: "yòu zhuǎn / xiàng yòu zhuǎn", english: "Turn right", cat: "Directions" },
+  { hanzi: "过马路", pinyin: "guò mǎlù", english: "Cross the street", cat: "Directions" },
+  { hanzi: "经过", pinyin: "jīngguò", english: "Pass by...", cat: "Directions" },
+  { hanzi: "回去", pinyin: "huíqù", english: "Go back", cat: "Directions" },
+  { hanzi: "掉头", pinyin: "diàotóu", english: "Turn around (U-turn)", cat: "Directions" },
+  { hanzi: "走到底", pinyin: "zǒu dào dǐ", english: "Walk to the end", cat: "Directions" },
+  { hanzi: "左边 / 右边", pinyin: "zuǒbiān / yòubiān", english: "Left side / right side", cat: "Directions" },
+  { hanzi: "对面", pinyin: "duìmiàn", english: "Opposite", cat: "Directions" },
+  { hanzi: "旁边", pinyin: "pángbiān", english: "Next to", cat: "Directions" },
+  { hanzi: "中间", pinyin: "zhōngjiān", english: "Between / in the middle", cat: "Directions" },
+  { hanzi: "拐角处", pinyin: "guǎijiǎo chù", english: "At the corner", cat: "Directions" },
+  { hanzi: "十字路口", pinyin: "shízì lùkǒu", english: "Intersection / crossroads", cat: "Directions" },
+  { hanzi: "红绿灯", pinyin: "hónglǜdēng", english: "Traffic light", cat: "Directions" },
+  { hanzi: "街 / 路", pinyin: "jiē / lù", english: "Street / road", cat: "Directions" },
+  { hanzi: "很近", pinyin: "hěn jìn", english: "Very close", cat: "Directions" },
+  { hanzi: "有点远", pinyin: "yǒudiǎn yuǎn", english: "A bit far", cat: "Directions" },
+  { hanzi: "大概五分钟", pinyin: "dàgài wǔ fēnzhōng", english: "About five minutes", cat: "Directions" },
+  { hanzi: "坐公交车 / 地铁比较快", pinyin: "zuò gōngjiāochē / dìtiě bǐjiào kuài", english: "It's faster by bus/subway", cat: "Directions" },
+  { hanzi: "你肯定能找到", pinyin: "nǐ kěndìng néng zhǎodào", english: "You'll definitely find it", cat: "Directions" },
+  { hanzi: "我也不是本地人", pinyin: "wǒ yě bú shì běndìrén", english: "I'm not from here either", cat: "Directions" }
+];
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>

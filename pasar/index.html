@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin everyday word flashcard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front {
+    background: #18181f;
+  }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.8rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<h1>菜市场用语</h1>
+<p class="subtitle">Mandarin Traditional Market Vocabulary</p>
+
+<div class="category-filter" id="filters"></div>
+
+<!-- Updated to 59 cards based on the array length -->
+<div class="counter" id="counter">Card 1 of 59</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" id="scene" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <!-- Placeholder updated to match the first card in the array -->
+      <div class="hanzi" id="hanzi">传统市场</div>
+      <div class="category-badge" id="cat-front">Market Types</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+      <div class="pinyin" id="pinyin">chuántǒng shìchǎng</div>
+      <div class="english" id="english">Traditional market</div>
+      <div class="category-badge" id="cat-back">Market Types</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+<script>
+
+const ALL_CARDS = [
+  { hanzi: "传统市场", pinyin: "chuántǒng shìchǎng", english: "Traditional market", cat: "Market Types" },
+  { hanzi: "菜市场 / 菜市", pinyin: "càishìchǎng / càishì", english: "Wet market / vegetable market", cat: "Market Types" },
+  { hanzi: "早市", pinyin: "zǎoshì", english: "Morning market", cat: "Market Types" },
+  { hanzi: "墟 / 赶集", pinyin: "xū / gǎnjí", english: "Country fair (open on specific lunar-calendar days)", cat: "Market Types" },
+  { hanzi: "街市", pinyin: "jiēshì", english: "Street market", cat: "Market Types" },
+
+  { hanzi: "克", pinyin: "kè", english: "Gram", cat: "Weights & Measures" },
+  { hanzi: "公斤", pinyin: "gōngjīn", english: "Kilogram", cat: "Weights & Measures" },
+  { hanzi: "市斤 / 斤", pinyin: "shìjīn / jīn", english: "500 g (jin)", cat: "Weights & Measures" },
+  { hanzi: "吨", pinyin: "dūn", english: "Ton", cat: "Weights & Measures" },
+  { hanzi: "毫升", pinyin: "háoshēng", english: "Milliliter", cat: "Weights & Measures" },
+  { hanzi: "升", pinyin: "shēng", english: "Liter", cat: "Weights & Measures" },
+
+  { hanzi: "元 / 块", pinyin: "yuán / kuài", english: "Yuan (currency unit, like \"dollar\")", cat: "Currency" },
+  { hanzi: "角 / 毛", pinyin: "jiǎo / máo", english: "Jiao (1/10 yuan, like \"dime\")", cat: "Currency" },
+  { hanzi: "分", pinyin: "fēn", english: "Fen (1/100 yuan, like \"cent\")", cat: "Currency" },
+
+  { hanzi: "买", pinyin: "mǎi", english: "To buy", cat: "Actions" },
+  { hanzi: "卖", pinyin: "mài", english: "To sell", cat: "Actions" },
+  { hanzi: "挑", pinyin: "tiāo", english: "To pick / select", cat: "Actions" },
+  { hanzi: "秤", pinyin: "chèng", english: "To weigh (also means \"scale\" as a noun)", cat: "Actions" },
+  { hanzi: "讲价 / 砍价", pinyin: "jiǎngjià / kǎnjià", english: "To haggle / bargain", cat: "Actions" },
+  { hanzi: "找钱", pinyin: "zhǎo qián", english: "To give change", cat: "Actions" },
+  { hanzi: "付钱", pinyin: "fù qián", english: "To pay", cat: "Actions" },
+  { hanzi: "扫码", pinyin: "sǎo mǎ", english: "To scan (QR code payment)", cat: "Actions" },
+  { hanzi: "装", pinyin: "zhuāng", english: "To pack / bag", cat: "Actions" },
+  { hanzi: "秤重", pinyin: "chèng zhòng", english: "To weigh (the item)", cat: "Actions" },
+
+  { hanzi: "新鲜", pinyin: "xīnxiān", english: "Fresh", cat: "Descriptive Words" },
+  { hanzi: "便宜", pinyin: "piányi", english: "Cheap", cat: "Descriptive Words" },
+  { hanzi: "贵", pinyin: "guì", english: "Expensive", cat: "Descriptive Words" },
+  { hanzi: "好吃", pinyin: "hǎochī", english: "Tasty", cat: "Descriptive Words" },
+  { hanzi: "熟", pinyin: "shú", english: "Ripe / cooked", cat: "Descriptive Words" },
+  { hanzi: "生", pinyin: "shēng", english: "Raw / unripe", cat: "Descriptive Words" },
+  { hanzi: "软", pinyin: "ruǎn", english: "Soft", cat: "Descriptive Words" },
+  { hanzi: "硬", pinyin: "yìng", english: "Hard", cat: "Descriptive Words" },
+  { hanzi: "大", pinyin: "dà", english: "Big", cat: "Descriptive Words" },
+  { hanzi: "小", pinyin: "xiǎo", english: "Small", cat: "Descriptive Words" },
+
+  { hanzi: "摊位", pinyin: "tānwèi", english: "Stall / booth", cat: "People & Places" },
+  { hanzi: "摊主", pinyin: "tānzhǔ", english: "Stall owner", cat: "People & Places" },
+  { hanzi: "老板 / 老板娘", pinyin: "lǎobǎn / lǎobǎnniáng", english: "Boss (male/female, common way to address seller)", cat: "People & Places" },
+  { hanzi: "顾客", pinyin: "gùkè", english: "Customer", cat: "People & Places" },
+  { hanzi: "收银台", pinyin: "shōuyíntái", english: "Checkout counter", cat: "People & Places" },
+  { hanzi: "塑料袋", pinyin: "sùliàodài", english: "Plastic bag", cat: "People & Places" },
+  { hanzi: "秤", pinyin: "chèng", english: "Scale", cat: "People & Places" },
+  { hanzi: "零钱", pinyin: "língqián", english: "Small change / coins", cat: "People & Places" },
+
+  { hanzi: "猪肉", pinyin: "zhū ròu", english: "Pork", cat: "Meat" },
+  { hanzi: "牛肉", pinyin: "niú ròu", english: "Beef", cat: "Meat" },
+  { hanzi: "鸡肉", pinyin: "jī ròu", english: "Chicken", cat: "Meat" },
+  { hanzi: "鸭肉", pinyin: "yā ròu", english: "Duck", cat: "Meat" },
+  { hanzi: "羊肉", pinyin: "yáng ròu", english: "Lamb / mutton", cat: "Meat" },
+  { hanzi: "火腿", pinyin: "huǒ tuǐ", english: "Ham", cat: "Meat" },
+  { hanzi: "培根", pinyin: "péi gēn", english: "Bacon", cat: "Meat" },
+  { hanzi: "香肠", pinyin: "xiāng cháng", english: "Sausage", cat: "Meat" },
+  { hanzi: "肉排 / 牛排", pinyin: "ròu pái / niú pái", english: "Steak", cat: "Meat" },
+  { hanzi: "排骨", pinyin: "pái gǔ", english: "Ribs", cat: "Meat" },
+  { hanzi: "肉末", pinyin: "ròu mò", english: "Ground meat", cat: "Meat" },
+
+  { hanzi: "鱼", pinyin: "yú", english: "Fish", cat: "Seafood" },
+  { hanzi: "虾", pinyin: "xiā", english: "Shrimp", cat: "Seafood" },
+  { hanzi: "螃蟹", pinyin: "páng xiè", english: "Crab", cat: "Seafood" },
+  { hanzi: "龙虾", pinyin: "lóng xiā", english: "Lobster", cat: "Seafood" },
+  { hanzi: "鱿鱼", pinyin: "yóu yú", english: "Squid", cat: "Seafood" },
+  { hanzi: "章鱼", pinyin: "zhāng yú", english: "Octopus", cat: "Seafood" },
+  { hanzi: "蛤蜊", pinyin: "gé lí", english: "Clam", cat: "Seafood" },
+  { hanzi: "牡蛎", pinyin: "mǔ lì", english: "Oyster", cat: "Seafood" },
+  { hanzi: "扇贝", pinyin: "shàn bèi", english: "Scallop", cat: "Seafood" },
+  { hanzi: "三文鱼", pinyin: "sān wén yú", english: "Salmon", cat: "Seafood" },
+  { hanzi: "金枪鱼", pinyin: "jīn qiāng yú", english: "Tuna", cat: "Seafood" },
+  { hanzi: "海带", pinyin: "hǎi dài", english: "Seaweed / kelp", cat: "Seafood" }
+];
+
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>

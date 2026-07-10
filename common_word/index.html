@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin everyday word flashcard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front {
+    background: #18181f;
+  }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.8rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>日常词汇卡片</h1>
+<p class="subtitle">Mandarin Everyday Word Flashcards</p>
+
+<div class="category-filter" id="filters"></div>
+
+<div class="counter" id="counter">Card 1 of 80</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" id="scene" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <div class="hanzi" id="hanzi">医生</div>
+     
+      <div class="category-badge" id="cat-front">Healthcare</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+       <div class="pinyin" id="pinyin">yīshēng</div>
+      <div class="english" id="english">Doctor</div>
+      <div class="category-badge" id="cat-back">Healthcare</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+最重要的
+<script>
+const ALL_CARDS = [
+  { hanzi: "不用客气", pinyin: "bùyòng kèqi", english: "You're welcome", cat: "Daily Phrases" },
+  { hanzi: "我住在市中心", pinyin: "wǒ zhù zài shì zhōngxīn", english: "I live downtown", cat: "Directions & Location" },
+  { hanzi: "撰写", pinyin: "zhuànxiě", english: "To write", cat: "Daily Phrases" },
+  { hanzi: "城市", pinyin: "chéngshì", english: "City", cat: "Daily Phrases" },
+  { hanzi: "我正在撰写年终报告。", pinyin: "wǒ zhèngzài zhuànxiě niánzhōng bàogào.", english: "I am writing the year-end report.", cat: "Daily Phrases" },
+  { hanzi: "报告", pinyin: "bàogào", english: "Report", cat: "Daily Phrases" },
+  { hanzi: "年终", pinyin: "niánzhōng", english: "Year-end", cat: "Daily Phrases" },
+  { hanzi: "我想你", pinyin: "wǒ xiǎng nǐ", english: "I miss you", cat: "Daily Phrases" },
+  { hanzi: "最重要的", pinyin: "zuìzhòngyào", english: "The most important", cat: "Daily Phrases" },
+  { hanzi: "停止", pinyin: "tíngzhǐ", english: "Stop", cat: "Daily Phrases" },
+  { hanzi: "你要去哪里", pinyin: "nǐ yào qù nǎlǐ", english: "Where do you need to go?", cat: "Directions & Location" },
+  { hanzi: "一起去好不好", pinyin: "yīqǐ qù hǎo bù hǎo", english: "Go together, good or not?", cat: "Social & Plans" },
+  { hanzi: "你喜不喜欢做运动", pinyin: "nǐ xǐ bù xǐhuan zuò yùndòng", english: "Do you like sports?", cat: "Sports & Hobbies" },
+  { hanzi: "等一下", pinyin: "děng yīxià", english: "Wait a moment", cat: "Daily Phrases" },
+  { hanzi: "什么事?", pinyin: "shénme shì?", english: "What’s the matter?", cat: "Daily Phrases" },
+  { hanzi: "我忘了带手机", pinyin: "wǒ wàngle dài shǒujī", english: "I forgot to bring my phone", cat: "Daily Phrases" },
+  { hanzi: "我们出发吧", pinyin: "wǒmen chūfā ba", english: "Let's go", cat: "Social & Plans" },
+  { hanzi: "公园远不远?", pinyin: "gōngyuán yuǎn bù yuǎn?", english: "Is the park far or not?", cat: "Directions & Location" },
+  { hanzi: "不是太远", pinyin: "bùshì tài yuǎn", english: "Not too far", cat: "Directions & Location" },
+  { hanzi: "有点饿", pinyin: "yǒudiǎn è", english: "A little bit hungry", cat: "Food & Dining" },
+  { hanzi: "我们去吃点东西吧", pinyin: "wǒmen qù chī diǎn dōngxi ba", english: "Let's eat something", cat: "Food & Dining" },
+  { hanzi: "好主意", pinyin: "hǎo zhǔyì", english: "Good idea", cat: "Daily Phrases" },
+  { hanzi: "我喜欢吃面", pinyin: "wǒ xǐhuan chī miàn", english: "I like to eat noodles", cat: "Food & Dining" },
+  { hanzi: "我也是", pinyin: "wǒ yěshì", english: "Me too / I also am", cat: "Daily Phrases" },
+  { hanzi: "这(家餐厅)怎么样", pinyin: "zhè (jiā cāntīng) zěnmeyàng", english: "How is this restaurant?", cat: "Food & Dining" },
+  { hanzi: "看起来不错", pinyin: "kàn qǐlái bùcuò", english: "Looks not bad", cat: "Daily Phrases" },
+  { hanzi: "好的,请稍等", pinyin: "hǎo de, qǐng shāo děng", english: "OK, please wait a moment", cat: "Daily Phrases" },
+  { hanzi: "一共五十元", pinyin: "yīgòng wǔshí yuán", english: "Total fifty yuan", cat: "Money & Shopping" },
+  { hanzi: "我来付钱", pinyin: "wǒ lái fùqián", english: "Let me pay", cat: "Money & Shopping" },
+  { hanzi: "不用,我来吧", pinyin: "bùyòng, wǒ lái ba", english: "No need, I’ll do it", cat: "Money & Shopping" },
+  { hanzi: "天气变冷了", pinyin: "tiānqì biàn lěng le", english: "The weather has turned cold", cat: "Weather" },
+  { hanzi: "你冷不冷?", pinyin: "nǐ lěng bù lěng?", english: "Are you cold or not?", cat: "Weather" },
+  { hanzi: "有一点", pinyin: "yǒu yīdiǎn", english: "A little bit", cat: "Daily Phrases" },
+  { hanzi: "我有一件外套", pinyin: "wǒ yǒu yī jiàn wàitào", english: "I have a jacket", cat: "Clothing & Items" },
+  { hanzi: "你要不要?", pinyin: "nǐ yào bù yào?", english: "Do you want it or not?", cat: "Daily Phrases" },
+  { hanzi: "谢谢,你真是好人", pinyin: "xièxie, nǐ zhēnshì hǎorén", english: "Thank you, you are really a good person", cat: "Daily Phrases" },
+  { hanzi: "不用谢", pinyin: "bùyòng xiè", english: "Don't mention it / No need to thank", cat: "Daily Phrases" },
+  { hanzi: "我们到了", pinyin: "wǒmen dào le", english: "We have arrived", cat: "Directions & Location" },
+  { hanzi: "这里好漂亮", pinyin: "zhèlǐ hǎo piàoliang", english: "Here is very beautiful", cat: "Directions & Location" },
+  { hanzi: "是的,我喜欢这里", pinyin: "shìde, wǒ xǐhuan zhèlǐ", english: "Yes, I like it here", cat: "Directions & Location" },
+  { hanzi: "你想不想休息一下?", pinyin: "nǐ xiǎng bù xiǎng xiūxi yīxià?", english: "Do you want to rest for a while?", cat: "Daily Phrases" },
+  { hanzi: "好的", pinyin: "hǎo de", english: "Sure / Okay", cat: "Daily Phrases" },
+  { hanzi: "我还可以", pinyin: "wǒ hái kěyǐ", english: "I'm doing okay / Not too bad", cat: "Daily Phrases" },
+  { hanzi: "我住在附近", pinyin: "wǒ zhù zài fùjìn", english: "I live nearby", cat: "Directions & Location" },
+  { hanzi: "有时间一起玩吧", pinyin: "yǒu shíjiān yīqǐ wán ba", english: "Let’s hang out sometime", cat: "Social & Plans" }, // Fixed typo from '试卷' (exam paper) to '时间' (time) based on context
+  { hanzi: "好的没问题", pinyin: "hǎo de méi wèntí", english: "Okay, no problem", cat: "Daily Phrases" },
+  { hanzi: "你的电话号码是什么", pinyin: "nǐ de diànhuà hàomǎ shì shénme", english: "What’s your phone number?", cat: "Communication" },
+  { hanzi: "我的号码是..…", pinyin: "wǒ de hàomǎ shì...", english: "My number is...", cat: "Communication" },
+  { hanzi: "我会给你打电话", pinyin: "wǒ huì gěi nǐ dǎ diànhuà", english: "I will call you", cat: "Communication" },
+  { hanzi: "好的,我等你", pinyin: "hǎo de, wǒ děng nǐ", english: "Ok, I’ll wait for you", cat: "Social & Plans" },
+  { hanzi: "天黑了", pinyin: "tiān hēi le", english: "It's getting dark", cat: "Weather & Time" },
+  { hanzi: "我要回家了", pinyin: "wǒ yào huí jiā le", english: "I should go home now", cat: "Directions & Location" },
+  { hanzi: "我送你吧", pinyin: "wǒ sòng nǐ ba", english: "Let me walk/drive you home", cat: "Social & Plans" },
+  { hanzi: "不用那么麻烦", pinyin: "bùyòng nàme máfan", english: "No need for such trouble", cat: "Daily Phrases" },
+  { hanzi: "不麻烦", pinyin: "bù máfan", english: "No trouble at all", cat: "Daily Phrases" },
+  { hanzi: "那好吧", pinyin: "nà hǎo ba", english: "Alright then", cat: "Daily Phrases" },
+  { hanzi: "路上小心", pinyin: "lùshàng xiǎoxīn", english: "Be careful on the road", cat: "Daily Phrases" },
+  { hanzi: "你也是", pinyin: "nǐ yěshì", english: "You too", cat: "Daily Phrases" },
+  { hanzi: "我们改天见", pinyin: "wǒmen gǎitiān jiàn", english: "We will meet another day", cat: "Social & Plans" },
+  { hanzi: "我回到家了", pinyin: "wǒ huí dào jiā le", english: "I arrived home already", cat: "Daily Phrases" },
+  { hanzi: "回到家了吗", pinyin: "huí dào jiā le ma", english: "Back home yet?", cat: "Daily Phrases" },
+  { hanzi: "我回到了,谢谢关心", pinyin: "wǒ huí dào le, xièxie guānxīn", english: "I'm back, thanks for caring", cat: "Daily Phrases" },
+  { hanzi: "早点休息", pinyin: "zǎodiǎn xiūxi", english: "Rest earlier", cat: "Daily Phrases" },
+  { hanzi: "你也是,晚安", pinyin: "nǐ yěshì, wǎn'ān", english: "You too, good night", cat: "Daily Phrases" },
+  { hanzi: "起床啦", pinyin: "qǐchuáng la", english: "Get up!", cat: "Daily Phrases" },
+  { hanzi: "今天有没有空?", pinyin: "jīntiān yǒu méiyǒu kòng?", english: "Are you free today?", cat: "Social & Plans" },
+  { hanzi: "有空一起吃饭吧", pinyin: "yǒu kòng yīqǐ chīfàn ba", english: "If you're free, let’s have a meal together", cat: "Social & Plans" },
+  { hanzi: "好的,几点见?", pinyin: "hǎo de, jǐ diǎn jiàn?", english: "Okay, what time shall we meet?", cat: "Social & Plans" },
+  { hanzi: "好的,不见不散", pinyin: "hǎo de, bùjiàn búsàn", english: "Okay, be there or be square", cat: "Social & Plans" },
+  { hanzi: "待会见", pinyin: "dāihuǐ jiàn", english: "See you in a bit", cat: "Social & Plans" }
+];
+
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>

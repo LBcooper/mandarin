@@ -207,13 +207,13 @@
 </style>
 </head>
 <body>
-<h1>厨房用语</h1>
-<p class="subtitle">Mandarin Kitchen Vocabulary</p>
+<h1>蔬菜用语</h1>
+<p class="subtitle">Mandarin Vegetable Vocabulary</p>
 
 <div class="category-filter" id="filters"></div>
 
-<!-- Updated to 26 cards based on the array length -->
-<div class="counter" id="counter">Card 1 of 26</div>
+<!-- Updated to 20 cards based on the array length -->
+<div class="counter" id="counter">Card 1 of 20</div>
 
 <div class="progress-bar">
   <div class="progress-fill" id="progress"></div>
@@ -224,14 +224,14 @@
     <div class="face face-front">
       <span class="hint">tap to reveal</span>
       <!-- Placeholder updated to match the first card in the array -->
-      <div class="hanzi" id="hanzi">刀</div>
-      <div class="category-badge" id="cat-front">Utensils & Tableware</div>
+      <div class="hanzi" id="hanzi">胡萝卜</div>
+      <div class="category-badge" id="cat-front">Vegetables</div>
     </div>
     <div class="face face-back">
       <span class="hint">english</span>
-      <div class="pinyin" id="pinyin">dāo</div>
-      <div class="english" id="english">Knife</div>
-      <div class="category-badge" id="cat-back">Utensils & Tableware</div>
+      <div class="pinyin" id="pinyin">hú luó bo</div>
+      <div class="english" id="english">Carrot</div>
+      <div class="category-badge" id="cat-back">Vegetables</div>
     </div>
   </div>
 </div>
@@ -243,36 +243,30 @@
   <button onclick="shuffle()" class="primary">Shuffle</button>
   <button onclick="next()">Next →</button>
 </div>
+
 <script>
+
 const ALL_CARDS = [
-  { hanzi: "刀", pinyin: "dāo", english: "Knife", cat: "Utensils & Tableware" },
-  { hanzi: "菜刀", pinyin: "càidāo", english: "Kitchen knife", cat: "Utensils & Tableware" },
-  { hanzi: "砧板 / 切菜板", pinyin: "zhēnbǎn / qiē cài bǎn", english: "Cutting board", cat: "Utensils & Tableware" },
-  { hanzi: "叉子", pinyin: "chāzi", english: "Fork", cat: "Utensils & Tableware" },
-  { hanzi: "勺子", pinyin: "sháozi", english: "Spoon", cat: "Utensils & Tableware" },
-  { hanzi: "筷子", pinyin: "kuàizi", english: "Chopsticks", cat: "Utensils & Tableware" },
-  { hanzi: "铲子", pinyin: "chǎnzi", english: "Spatula", cat: "Utensils & Tableware" },
-  { hanzi: "盘子", pinyin: "pánzi", english: "Plate", cat: "Utensils & Tableware" },
-  { hanzi: "塑料盘子", pinyin: "sùliào pánzi", english: "Plastic plate", cat: "Utensils & Tableware" },
-  { hanzi: "陶瓷盘子", pinyin: "táocí pánzi", english: "Ceramic plate", cat: "Utensils & Tableware" },
-  { hanzi: "钢板", pinyin: "gāngbǎn", english: "Steel plate", cat: "Utensils & Tableware" },
-  { hanzi: "碗", pinyin: "wǎn", english: "Bowl", cat: "Utensils & Tableware" },
-  { hanzi: "杯子", pinyin: "bēizi", english: "Cup / glass", cat: "Utensils & Tableware" },
-
-  { hanzi: "锅", pinyin: "guō", english: "Pot", cat: "Appliances & Cookware" },
-  { hanzi: "炒锅", pinyin: "chǎoguō", english: "Wok", cat: "Appliances & Cookware" },
-  { hanzi: "平底锅", pinyin: "píngdǐguō", english: "Frying pan", cat: "Appliances & Cookware" },
-  { hanzi: "蒸锅", pinyin: "zhēngguō", english: "Steamer", cat: "Appliances & Cookware" },
-  { hanzi: "烤箱", pinyin: "kǎoxiāng", english: "Oven", cat: "Appliances & Cookware" },
-  { hanzi: "电饭煲", pinyin: "diànfànbāo", english: "Rice cooker", cat: "Appliances & Cookware" },
-  { hanzi: "微波炉", pinyin: "wéibōlú", english: "Microwave", cat: "Appliances & Cookware" },
-  { hanzi: "洗碗机", pinyin: "xǐwǎnjī", english: "Dishwasher", cat: "Appliances & Cookware" },
-  { hanzi: "火炉 / 炉子 / 灶", pinyin: "huǒlú / lúzi / zào", english: "Stove", cat: "Appliances & Cookware" },
-  { hanzi: "冰箱", pinyin: "bīngxiāng", english: "Refrigerator", cat: "Appliances & Cookware" },
-  { hanzi: "水槽", pinyin: "shuǐcáo", english: "Sink", cat: "Appliances & Cookware" },
-
-  { hanzi: "抹布", pinyin: "mābù", english: "Dishcloth", cat: "Other Kitchen Items" },
-  { hanzi: "围裙", pinyin: "wéiqún", english: "Apron", cat: "Other Kitchen Items" }
+  { hanzi: "胡萝卜", pinyin: "hú luó bo", english: "Carrot", cat: "Vegetables" },
+  { hanzi: "白菜", pinyin: "bái cài", english: "Napa cabbage", cat: "Vegetables" },
+  { hanzi: "卷心菜", pinyin: "juǎn xīn cài", english: "Cabbage", cat: "Vegetables" },
+  { hanzi: "西兰花", pinyin: "xī lán huā", english: "Broccoli", cat: "Vegetables" },
+  { hanzi: "菠菜", pinyin: "bō cài", english: "Spinach", cat: "Vegetables" },
+  { hanzi: "黄瓜", pinyin: "huáng guā", english: "Cucumber", cat: "Vegetables" },
+  { hanzi: "番茄 / 西红柿", pinyin: "fān qié / xī hóng shì", english: "Tomato", cat: "Vegetables" },
+  { hanzi: "土豆 / 马铃薯", pinyin: "tǔ dòu / mǎ líng shǔ", english: "Potato", cat: "Vegetables" },
+  { hanzi: "洋葱", pinyin: "yáng cōng", english: "Onion", cat: "Vegetables" },
+  { hanzi: "大蒜", pinyin: "dà suàn", english: "Garlic", cat: "Vegetables" },
+  { hanzi: "青椒", pinyin: "qīng jiāo", english: "Green pepper", cat: "Vegetables" },
+  { hanzi: "茄子", pinyin: "qié zi", english: "Eggplant", cat: "Vegetables" },
+  { hanzi: "玉米", pinyin: "yù mǐ", english: "Corn", cat: "Vegetables" },
+  { hanzi: "芹菜", pinyin: "qín cài", english: "Celery", cat: "Vegetables" },
+  { hanzi: "豆芽", pinyin: "dòu yá", english: "Bean sprouts", cat: "Vegetables" },
+  { hanzi: "蘑菇", pinyin: "mó gu", english: "Mushroom", cat: "Vegetables" },
+  { hanzi: "生菜", pinyin: "shēng cài", english: "Lettuce", cat: "Vegetables" },
+  { hanzi: "南瓜", pinyin: "nán guā", english: "Pumpkin", cat: "Vegetables" },
+  { hanzi: "萝卜", pinyin: "luó bo", english: "Radish", cat: "Vegetables" },
+  { hanzi: "豌豆", pinyin: "wān dòu", english: "Peas", cat: "Vegetables" }
 ];
 
 const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];

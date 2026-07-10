@@ -208,12 +208,13 @@
 </head>
 <body>
 
-<h1>日常词汇卡片</h1>
-<p class="subtitle">Mandarin Everyday Word Flashcards</p>
+<h1>办公室用语</h1>
+<p class="subtitle">Mandarin Office & Workplace Vocabulary</p>
 
 <div class="category-filter" id="filters"></div>
 
-<div class="counter" id="counter">Card 1 of 80</div>
+<!-- Updated to 41 cards based on the array length -->
+<div class="counter" id="counter">Card 1 of 41</div>
 
 <div class="progress-bar">
   <div class="progress-fill" id="progress"></div>
@@ -223,15 +224,15 @@
   <div class="card" id="card">
     <div class="face face-front">
       <span class="hint">tap to reveal</span>
-      <div class="hanzi" id="hanzi">医生</div>
-     
-      <div class="category-badge" id="cat-front">Healthcare</div>
+      <!-- Placeholder updated to match the first card in the array -->
+      <div class="hanzi" id="hanzi">办公桌</div>
+      <div class="category-badge" id="cat-front">Office Basics</div>
     </div>
     <div class="face face-back">
       <span class="hint">english</span>
-       <div class="pinyin" id="pinyin">yīshēng</div>
-      <div class="english" id="english">Doctor</div>
-      <div class="category-badge" id="cat-back">Healthcare</div>
+      <div class="pinyin" id="pinyin">bàngōngzhuō</div>
+      <div class="english" id="english">Desk</div>
+      <div class="category-badge" id="cat-back">Office Basics</div>
     </div>
   </div>
 </div>
@@ -243,7 +244,7 @@
   <button onclick="shuffle()" class="primary">Shuffle</button>
   <button onclick="next()">Next →</button>
 </div>
-最重要的
+
 <script>
 
 const ALL_CARDS = [

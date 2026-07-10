@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin everyday word flashcard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front {
+    background: #18181f;
+  }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.8rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<h1>街道与地点</h1>
+<p class="subtitle">Mandarin Street, Places & Transportation Vocabulary</p>
+
+<div class="category-filter" id="filters"></div>
+
+<!-- Updated to 48 cards based on the array length -->
+<div class="counter" id="counter">Card 1 of 48</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" id="scene" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <!-- Placeholder updated to match the first card in the array -->
+      <div class="hanzi" id="hanzi">街道 / 街</div>
+      <div class="category-badge" id="cat-front">Street & Traffic</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+      <div class="pinyin" id="pinyin">jiēdào / jiē</div>
+      <div class="english" id="english">Street</div>
+      <div class="category-badge" id="cat-back">Street & Traffic</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+<script>
+const ALL_CARDS = [
+  { hanzi: "街道 / 街", pinyin: "jiēdào / jiē", english: "Street", cat: "Street & Traffic" },
+  { hanzi: "道路 / 路", pinyin: "dàolù / lù", english: "Road", cat: "Street & Traffic" },
+  { hanzi: "大道", pinyin: "dàdào", english: "Avenue", cat: "Street & Traffic" },
+  { hanzi: "排水沟", pinyin: "páishuǐgōu", english: "Gutter", cat: "Street & Traffic" },
+  { hanzi: "十字路口", pinyin: "shízì lùkǒu", english: "Intersection", cat: "Street & Traffic" },
+  { hanzi: "交通标志", pinyin: "jiāotōng biāozhì", english: "Traffic sign", cat: "Street & Traffic" },
+  { hanzi: "拐角 / 街角", pinyin: "guǎijiǎo / jiējiǎo", english: "Corner", cat: "Street & Traffic" },
+  { hanzi: "路灯", pinyin: "lùdēng", english: "Street light", cat: "Street & Traffic" },
+  { hanzi: "红绿灯", pinyin: "hónglǜdēng", english: "Traffic light", cat: "Street & Traffic" },
+  { hanzi: "停车收费表", pinyin: "tíngchē shōufèibiǎo", english: "Parking meter", cat: "Street & Traffic" },
+  { hanzi: "交通", pinyin: "jiāotōng", english: "Traffic", cat: "Street & Traffic" },
+
+  { hanzi: "银行", pinyin: "yínháng", english: "Bank", cat: "Places & Buildings" },
+  { hanzi: "赌场", pinyin: "dǔchǎng", english: "Casino", cat: "Places & Buildings" },
+  { hanzi: "大教堂", pinyin: "dà jiàotáng", english: "Cathedral", cat: "Places & Buildings" },
+  { hanzi: "市政厅", pinyin: "shìzhèngtīng", english: "City hall", cat: "Places & Buildings" },
+  { hanzi: "学院", pinyin: "xuéyuàn", english: "College", cat: "Places & Buildings" },
+  { hanzi: "药店", pinyin: "yàodiàn", english: "Drug store", cat: "Places & Buildings" },
+  { hanzi: "大使馆", pinyin: "dàshǐguǎn", english: "Embassy", cat: "Places & Buildings" },
+  { hanzi: "加油站", pinyin: "jiāyóuzhàn", english: "Gas station", cat: "Places & Buildings" },
+  { hanzi: "医院", pinyin: "yīyuàn", english: "Hospital", cat: "Places & Buildings" },
+  { hanzi: "酒店 / 旅馆", pinyin: "jiǔdiàn / lǚguǎn", english: "Hotel", cat: "Places & Buildings" },
+  { hanzi: "问询处 / 信息中心", pinyin: "wènxúnchù / xìnxī zhōngxīn", english: "Information office", cat: "Places & Buildings" },
+  { hanzi: "图书馆", pinyin: "túshūguǎn", english: "Library", cat: "Places & Buildings" },
+  { hanzi: "货币兑换处", pinyin: "huòbì duìhuàn chù", english: "Money exchange", cat: "Places & Buildings" },
+  { hanzi: "清真寺", pinyin: "qīngzhēnsì", english: "Mosque", cat: "Places & Buildings" },
+  { hanzi: "电影院", pinyin: "diànyǐngyuàn", english: "Movie theater", cat: "Places & Buildings" },
+  { hanzi: "博物馆", pinyin: "bówùguǎn", english: "Museum", cat: "Places & Buildings" },
+  { hanzi: "夜总会 / 夜店", pinyin: "yèzǒnghuì / yèdiàn", english: "Nightclub", cat: "Places & Buildings" },
+  { hanzi: "眼镜店", pinyin: "yǎnjìng diàn", english: "Optical store", cat: "Places & Buildings" },
+  { hanzi: "停车场", pinyin: "tíngchēchǎng", english: "Parking lot", cat: "Places & Buildings" },
+  { hanzi: "餐厅 / 饭馆", pinyin: "cāntīng / fànguǎn", english: "Restaurant", cat: "Places & Buildings" },
+  { hanzi: "学校", pinyin: "xuéxiào", english: "School", cat: "Places & Buildings" },
+  { hanzi: "商店", pinyin: "shāngdiàn", english: "Store", cat: "Places & Buildings" },
+  { hanzi: "地铁", pinyin: "dìtiě", english: "Subway", cat: "Places & Buildings" },
+  { hanzi: "犹太会堂", pinyin: "yóutài huìtáng", english: "Synagogue", cat: "Places & Buildings" },
+  { hanzi: "寺庙", pinyin: "sìmiào", english: "Temple", cat: "Places & Buildings" },
+  { hanzi: "剧院", pinyin: "jùyuàn", english: "Theater", cat: "Places & Buildings" },
+  { hanzi: "旅行社", pinyin: "lǚxíngshè", english: "Travel agency", cat: "Places & Buildings" },
+  { hanzi: "大学", pinyin: "dàxué", english: "University", cat: "Places & Buildings" },
+  { hanzi: "动物园", pinyin: "dòngwùyuán", english: "Zoo", cat: "Places & Buildings" },
+
+  { hanzi: "汽车", pinyin: "qìchē", english: "Car", cat: "Vehicles & Transportation" },
+  { hanzi: "摩托车", pinyin: "mótuōchē", english: "Motorcycles", cat: "Vehicles & Transportation" },
+  { hanzi: "自行车 / 单车", pinyin: "zìxíngchē / dānchē", english: "Bicycle", cat: "Vehicles & Transportation" },
+  { hanzi: "电动汽车 / 电动车", pinyin: "diàndòng qìchē / diàndòngchē", english: "Electric vehicle (EV)", cat: "Vehicles & Transportation" },
+  { hanzi: "电动自行车 / 电瓶车", pinyin: "diàndòng zìxíngchē / diànpíngchē", english: "Electric bicycle", cat: "Vehicles & Transportation" },
+  { hanzi: "电动摩托车", pinyin: "diàndòng mótuōchē", english: "Electric motorcycle", cat: "Vehicles & Transportation" },
+  { hanzi: "电动汽车", pinyin: "diàndòng qìchē", english: "Electric car", cat: "Vehicles & Transportation" },
+  { hanzi: "出租车", pinyin: "chūzūchē", english: "Taxi", cat: "Vehicles & Transportation" }
+];
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>

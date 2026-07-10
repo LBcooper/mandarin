@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin everyday word flashcard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f13;
+    color: #e8e6e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .counter {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .scene {
+    width: 380px;
+    max-width: 100%;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #2a2a35;
+    user-select: none;
+  }
+
+  .face-front {
+    background: #18181f;
+  }
+
+  .face-back {
+    background: #161b28;
+    transform: rotateY(180deg);
+    border-color: #1e2a40;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    position: absolute;
+    top: 1rem;
+  }
+
+  .hanzi {
+    font-size: 3.8rem;
+    font-weight: 300;
+    color: #f0ede6;
+    line-height: 1;
+  }
+
+  .pinyin {
+    font-size: 1rem;
+    color: #6a8fc0;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .english {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e0ddd6;
+    letter-spacing: 0.02em;
+  }
+
+  .category-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a5478;
+    background: #0f1a2a;
+    border: 1px solid #1e2a40;
+    padding: 3px 10px;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  button {
+    background: #18181f;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 0.55rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: #22222c; border-color: #3a3a4a; color: #ddd; }
+  button:active { transform: scale(0.97); }
+
+  button.primary {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+  button.primary:hover { background: #1f3350; }
+
+  .progress-bar {
+    width: 380px;
+    max-width: 100%;
+    height: 3px;
+    background: #1a1a22;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #2a5080;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-btn.active {
+    background: #1a2a42;
+    border-color: #2a4060;
+    color: #7aadde;
+  }
+
+  .tap-hint {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.06em;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<h1>商务词汇卡片</h1>
+<p class="subtitle">Business Mandarin Flashcards</p>
+
+<div class="category-filter" id="filters"></div>
+
+<!-- Updated to 88 total cards -->
+<div class="counter" id="counter">Card 1 of 88</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<div class="scene" onclick="flipCard()" id="scene" title="Click to flip">
+  <div class="card" id="card">
+    <div class="face face-front">
+      <span class="hint">tap to reveal</span>
+      <div class="hanzi" id="hanzi">谁</div>
+      <div class="category-badge" id="cat-front">Question Words</div>
+    </div>
+    <div class="face face-back">
+      <span class="hint">english</span>
+       <div class="pinyin" id="pinyin">shéi</div>
+      <div class="english" id="english">Who</div>
+      <div class="category-badge" id="cat-back">Question Words</div>
+    </div>
+  </div>
+</div>
+
+<p class="tap-hint">click the card to flip</p>
+
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()" class="primary">Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+
+<script>
+const ALL_CARDS = [
+  // --- QUESTION WORDS ---
+  { hanzi: "谁", pinyin: "shéi", english: "Who", cat: "Question Words" },
+  { hanzi: "什么", pinyin: "shénme", english: "What", cat: "Question Words" },
+  { hanzi: "在哪 / 哪里", pinyin: "zài nǎ / nǎlǐ", english: "Where", cat: "Question Words" },
+  { hanzi: "什么时候", pinyin: "shénme shíhou", english: "When", cat: "Question Words" },
+  { hanzi: "为什么", pinyin: "wèishénme", english: "Why", cat: "Question Words" },
+  { hanzi: "怎么 / 如何", pinyin: "zěnme / rúhé", english: "How", cat: "Question Words" },
+
+  // --- BUSINESS: ACTIONS & GENERAL ---
+  { hanzi: "工作", pinyin: "gōngzuò", english: "Work", cat: "Business General" },
+  { hanzi: "上班", pinyin: "shàngbān", english: "Start work / On duty", cat: "Business General" },
+  { hanzi: "下班", pinyin: "xiàbān", english: "Finish work / Get off work", cat: "Business General" },
+  { hanzi: "加班", pinyin: "jiābān", english: "Work overtime", cat: "Business General" },
+  { hanzi: "办公室", pinyin: "bàngōngshì", english: "Office", cat: "Business General" },
+  { hanzi: "工厂", pinyin: "gōngchǎng", english: "Factory", cat: "Business General" },
+  { hanzi: "出差", pinyin: "chūchā", english: "Business trip", cat: "Business General" },
+  { hanzi: "职业", pinyin: "zhíyè", english: "Occupation / Profession", cat: "Business General" },
+  { hanzi: "薪水", pinyin: "xīnshuǐ", english: "Salary", cat: "Business General" },
+  { hanzi: "工作日", pinyin: "gōngzuòrì", english: "Workday", cat: "Business General" },
+  { hanzi: "路上辛苦吗？", pinyin: "lùshang xīnkǔ ma?", english: "Did you have a hard journey?", cat: "Business Phrases" },
+  { hanzi: "幸会幸会", pinyin: "xìnghuì xìnghuì", english: "Pleasure to meet you", cat: "Business Phrases" },
+  { hanzi: "久仰大名", pinyin: "jiǔyǎng dàmíng", english: "I've heard a lot about you", cat: "Business Phrases" },
+
+  // --- BUSINESS: PEOPLE & ROLES ---
+  { hanzi: "老板", pinyin: "lǎobǎn", english: "Boss", cat: "People & Roles" },
+  { hanzi: "总经理", pinyin: "zǒngjīnglǐ", english: "CEO / General Manager", cat: "People & Roles" },
+  { hanzi: "经理", pinyin: "jīnglǐ", english: "Manager", cat: "People & Roles" },
+  { hanzi: "员工", pinyin: "yuángōng", english: "Employee", cat: "People & Roles" },
+  { hanzi: "客户", pinyin: "kèhù", english: "Client", cat: "People & Roles" },
+  { hanzi: "雇主", pinyin: "gùzhǔ", english: "Employer", cat: "People & Roles" },
+  { hanzi: "同事", pinyin: "tóngshì", english: "Colleague", cat: "People & Roles" },
+  { hanzi: "领导", pinyin: "lǐngdǎo", english: "Leader", cat: "People & Roles" },
+  { hanzi: "顾客", pinyin: "gùkè", english: "Customer", cat: "People & Roles" },
+  { hanzi: "团队", pinyin: "tuánduì", english: "Team", cat: "People & Roles" },
+  { hanzi: "财务分析师", pinyin: "cáiwù fēnxīshī", english: "Financial analyst", cat: "People & Roles" },
+  { hanzi: "企业顾问", pinyin: "qǐyè gùwèn", english: "Business consultant", cat: "People & Roles" },
+  { hanzi: "人力资源经理", pinyin: "rénlì zīyuán jīnglǐ", english: "Human resource manager", cat: "People & Roles" },
+
+  // --- BUSINESS: OFFICE TOOLS & ITEMS ---
+  { hanzi: "电脑", pinyin: "diànnǎo", english: "Computer", cat: "Office Items" },
+  { hanzi: "电邮", pinyin: "diànyóu", english: "Email", cat: "Office Items" },
+  { hanzi: "名片", pinyin: "míngpiàn", english: "Business card", cat: "Office Items" },
+  { hanzi: "文件", pinyin: "wénjiàn", english: "Document", cat: "Office Items" },
+  { hanzi: "打印机", pinyin: "dǎyìnjī", english: "Printer", cat: "Office Items" },
+  { hanzi: "复印机", pinyin: "fùyìnjī", english: "Photocopier", cat: "Office Items" },
+  { hanzi: "电话", pinyin: "diànhuà", english: "Telephone", cat: "Office Items" },
+  { hanzi: "文件夹", pinyin: "wénjiànjiā", english: "File folder", cat: "Office Items" },
+  { hanzi: "桌子", pinyin: "zhuōzi", english: "Table / Desk", cat: "Office Items" },
+  { hanzi: "椅子", pinyin: "yǐzi", english: "Chair", cat: "Office Items" },
+  { hanzi: "电话会议设备", pinyin: "diànhuà huìyì shèbèi", english: "Conference call equipment", cat: "Office Items" },
+  { hanzi: "钢笔", pinyin: "gāngbǐ", english: "Pen", cat: "Office Items" },
+  { hanzi: "铅笔", pinyin: "qiānbǐ", english: "Pencil", cat: "Office Items" },
+  { hanzi: "书架", pinyin: "shūjià", english: "Bookshelf", cat: "Office Items" },
+  { hanzi: "计算器", pinyin: "jìsuànqì", english: "Calculator", cat: "Office Items" },
+  { hanzi: "文件柜", pinyin: "wénjiànguì", english: "File cabinet", cat: "Office Items" },
+  { hanzi: "白板", pinyin: "báibǎn", english: "Whiteboard", cat: "Office Items" },
+  { hanzi: "黑板", pinyin: "hēibǎn", english: "Blackboard", cat: "Office Items" },
+  { hanzi: "扫描器", pinyin: "sǎomiáoqì", english: "Scanner", cat: "Office Items" },
+  { hanzi: "相机", pinyin: "xiàngjī", english: "Camera", cat: "Office Items" },
+
+  // --- BUSINESS: OPERATIONS & TRADE ---
+  { hanzi: "会议", pinyin: "huìyì", english: "Meeting", cat: "Operations & Trade" },
+  { hanzi: "谈生意", pinyin: "tán shēngyi", english: "Discuss business", cat: "Operations & Trade" },
+  { hanzi: "成交交易", pinyin: "chéngjiāo jiāoyì", english: "Make a deal", cat: "Operations & Trade" },
+  { hanzi: "处理问题", pinyin: "chǔlǐ wèntí", english: "Manage problems", cat: "Operations & Trade" },
+  { hanzi: "合同", pinyin: "hétong", english: "Contract", cat: "Operations & Trade" },
+  { hanzi: "谈判", pinyin: "tánpàn", english: "Negotiation", cat: "Operations & Trade" },
+  { hanzi: "市场", pinyin: "shìchǎng", english: "Market", cat: "Operations & Trade" },
+  { hanzi: "投资", pinyin: "tóuzī", english: "Investment", cat: "Operations & Trade" },
+  { hanzi: "贸易", pinyin: "màoyì", english: "Trade", cat: "Operations & Trade" },
+  { hanzi: "期限", pinyin: "qīxiàn", english: "Deadline", cat: "Operations & Trade" },
+  { hanzi: "工资", pinyin: "gōngzī", english: "Wages / Salary", cat: "Operations & Trade" },
+  { hanzi: "材料", pinyin: "cáiliào", english: "Material", cat: "Operations & Trade" },
+  { hanzi: "价格", pinyin: "jiàgé", english: "Price", cat: "Operations & Trade" },
+  { hanzi: "交货", pinyin: "jiāohuò", english: "Delivery", cat: "Operations & Trade" },
+  { hanzi: "付款", pinyin: "fùkuǎn", english: "Payment", cat: "Operations & Trade" },
+
+  // --- BUSINESS: ECONOMICS & CORPORATE STRATEGY ---
+  { hanzi: "生产力 / 生产率", pinyin: "shēngchǎnlì / shēngchǎnlǜ", english: "Productivity", cat: "Economics & Strategy" },
+  { hanzi: "年增长率", pinyin: "nián zēngzhǎnglǜ", english: "Annual growth rate", cat: "Economics & Strategy" },
+  { hanzi: "国内生产总值 (GDP)", pinyin: "guónèi shēngchǎn zǒngzhí", english: "Gross Domestic Product (GDP)", cat: "Economics & Strategy" },
+  { hanzi: "市场份额", pinyin: "shìchǎng fèn'é", english: "Market share", cat: "Economics & Strategy" },
+  { hanzi: "业务模式", pinyin: "yèwù móshì", english: "Business model", cat: "Economics & Strategy" },
+  { hanzi: "网店", pinyin: "wǎngdiàn", english: "E-store", cat: "Economics & Strategy" },
+  { hanzi: "实体店", pinyin: "shítǐdiàn", english: "Physical store", cat: "Economics & Strategy" },
+  { hanzi: "全球性企业", pinyin: "quánqiúxìng qǐyè", english: "Global company", cat: "Economics & Strategy" },
+  { hanzi: "能力 / 性能", pinyin: "nénglì / xìngnéng", english: "Capabilities / Performance", cat: "Economics & Strategy" },
+  { hanzi: "全球的", pinyin: "quánqiú de", english: "Global", cat: "Economics & Strategy" },
+  { hanzi: "地区性", pinyin: "dìqūxìng", english: "Regional", cat: "Economics & Strategy" },
+  { hanzi: "当地的", pinyin: "dāngdì de", english: "Local", cat: "Economics & Strategy" },
+  { hanzi: "境外游", pinyin: "jìngwài yóu", english: "Overseas travel", cat: "Economics & Strategy" },
+  { hanzi: "基础设施", pinyin: "jīchǔ shèshī", english: "Infrastructure", cat: "Economics & Strategy" },
+  { hanzi: "市值", pinyin: "shìzhí", english: "Market value", cat: "Economics & Strategy" },
+  { hanzi: "模范", pinyin: "mófàn", english: "Model / Role model", cat: "Economics & Strategy" },
+  { hanzi: "城市化", pinyin: "chéngshìhuà", english: "Urbanization", cat: "Economics & Strategy" },
+  { hanzi: "私营企业", pinyin: "sīyíng qǐyè", english: "Private sector", cat: "Economics & Strategy" },
+  { hanzi: "公共部门", pinyin: "gōnggòng bùmén", english: "Public sector", cat: "Economics & Strategy" },
+  { hanzi: "一线城市 / 二线城市", pinyin: "yīxiàn chéngshì / èrxiàn chéngshì", english: "First-tier / Second-tier cities", cat: "Economics & Strategy" },
+
+  // --- BUSINESS: DEPARTMENTS ---
+  { hanzi: "会计", pinyin: "kuàijì", english: "Accounting", cat: "Departments" },
+  { hanzi: "人事处", pinyin: "rénshìchù", english: "Human Resources", cat: "Departments" },
+  { hanzi: "信息管理", pinyin: "xìnxī guǎnlǐ", english: "Information Technology (IT) / Info Management", cat: "Departments" },
+  { hanzi: "营销", pinyin: "yíngxiāo", english: "Marketing", cat: "Departments" },
+  { hanzi: "财政", pinyin: "cáizhèng", english: "Finance", cat: "Departments" },
+  { hanzi: "销售", pinyin: "xiāoshòu", english: "Sales", cat: "Departments" },
+  { hanzi: "生产", pinyin: "shēngchǎn", english: "Production", cat: "Departments" },
+  { hanzi: "市场研究", pinyin: "shìchǎng yánjiū", english: "Market research", cat: "Departments" },
+  { hanzi: "管理", pinyin: "guǎnlǐ", english: "Management", cat: "Departments" }
+];
+
+
+const CATEGORIES = ["All", ...new Set(ALL_CARDS.map(c => c.cat))];
+let activeCategory = "All";
+let cards = [...ALL_CARDS];
+let index = 0;
+let flipped = false;
+
+function buildFilters() {
+  const container = document.getElementById("filters");
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => setCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-btn").forEach((b, i) => {
+    b.classList.toggle("active", CATEGORIES[i] === cat);
+  });
+  cards = cat === "All" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  index = 0;
+  resetCard();
+  render();
+}
+
+function render() {
+  const c = cards[index];
+  document.getElementById("hanzi").textContent = c.hanzi;
+  document.getElementById("pinyin").textContent = c.pinyin;
+  document.getElementById("english").textContent = c.english;
+  document.getElementById("cat-front").textContent = c.cat;
+  document.getElementById("cat-back").textContent = c.cat;
+  document.getElementById("counter").textContent = `Card ${index + 1} of ${cards.length}`;
+  document.getElementById("progress").style.width = ((index + 1) / cards.length * 100) + "%";
+}
+
+function resetCard() {
+  flipped = false;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("card").classList.toggle("flipped", flipped);
+}
+
+function next() {
+  index = (index + 1) % cards.length;
+  resetCard();
+  render();
+}
+
+function prev() {
+  index = (index - 1 + cards.length) % cards.length;
+  resetCard();
+  render();
+}
+
+function shuffle() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  resetCard();
+  render();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+});
+
+buildFilters();
+render();
+</script>
+</body>
+</html>
