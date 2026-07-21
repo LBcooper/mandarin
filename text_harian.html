@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>读本 · Mandarin Reader</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;600&family=Ma+Shan+Zheng&display=swap');
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Noto Sans SC', sans-serif;
+  transition: background .5s ease, color .5s ease;
+}
+
+:root {
+  --font-scale: 1;
+  --radius: 3px;
+}
+
+/* ===== Themes ===== */
+body[data-theme="paper"] {
+  --bg: #EAE6D9; --bg-alt: #E1DCC9; --ink: #2B2620; --ink-soft: rgba(43,38,32,.55);
+  --accent: #9C3B2E; --accent-soft: rgba(156,59,46,.14); --grid-line: rgba(156,59,46,.16);
+  --card-bg: #F3EFE2; --shadow: rgba(43,38,32,.18); --rule: rgba(43,38,32,.14);
+}
+body[data-theme="ink"] {
+  --bg: #131C26; --bg-alt: #1B2733; --ink: #DCD7C5; --ink-soft: rgba(220,215,197,.55);
+  --accent: #C9A34E; --accent-soft: rgba(201,163,78,.14); --grid-line: rgba(201,163,78,.14);
+  --card-bg: #1B2733; --shadow: rgba(0,0,0,.5); --rule: rgba(220,215,197,.14);
+}
+body[data-theme="dusk"] {
+  --bg: #241A12; --bg-alt: #2E2117; --ink: #EAD9B8; --ink-soft: rgba(234,217,184,.55);
+  --accent: #4F8A72; --accent-soft: rgba(79,138,114,.16); --grid-line: rgba(79,138,114,.16);
+  --card-bg: #2E2117; --shadow: rgba(0,0,0,.45); --rule: rgba(234,217,184,.14);
+}
+body[data-theme="notebook"] {
+  --bg: #F5F2E8; --bg-alt: #EFEBDD; --ink: #26324F; --ink-soft: rgba(38,50,79,.55);
+  --accent: #C0392B; --accent-soft: rgba(192,57,43,.12); --grid-line: rgba(192,57,43,.32);
+  --card-bg: #FFFFFF; --shadow: rgba(38,50,79,.14); --rule: rgba(38,50,79,.14);
+}
+
+::selection { background: var(--accent-soft); }
+
+/* ===== Layout shells ===== */
+#app { min-height: 100vh; }
+.wrap { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== Cover / contents screen ===== */
+#cover { padding: 64px 0 80px; }
+.cover-head { text-align: center; margin-bottom: 44px; }
+.brush-title {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 96px;
+  line-height: 1;
+  color: var(--accent);
+  margin: 0;
+}
+.cover-sub {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 15px;
+  letter-spacing: .12em;
+  color: var(--ink-soft);
+  margin-top: 10px;
+}
+
+.theme-row {
+  display: flex; justify-content: center; gap: 10px; margin-top: 22px;
+}
+.swatch {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--rule);
+  cursor: pointer; padding: 0; position: relative;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.swatch:hover { transform: translateY(-2px); }
+.swatch[aria-pressed="true"] { border-color: var(--accent); }
+.swatch[aria-pressed="true"]::after {
+  content: ""; position: absolute; inset: -6px; border: 1px solid var(--accent);
+  border-radius: 50%;
+}
+.swatch.sw-paper { background: #EAE6D9; }
+.swatch.sw-ink { background: #131C26; }
+.swatch.sw-dusk { background: #241A12; }
+.swatch.sw-notebook { background: #F5F2E8; box-shadow: inset 0 0 0 1px rgba(192,57,43,.4); }
+
+.lesson-grid { display: flex; flex-direction: column; gap: 16px; }
+.lesson-card {
+  display: flex; align-items: stretch; gap: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  cursor: pointer; text-align: left;
+  box-shadow: 0 6px 18px -12px var(--shadow);
+  transition: transform .25s ease, box-shadow .25s ease;
+  font-family: inherit; color: inherit; width: 100%;
+}
+.lesson-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -14px var(--shadow); }
+.lesson-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.tzg {
+  flex: 0 0 52px; width: 52px; height: 52px;
+  position: relative;
+  border: 1.5px solid var(--grid-line);
+}
+.tzg::before, .tzg::after {
+  content: ""; position: absolute; background: var(--grid-line);
+}
+.tzg::before { top: 0; bottom: 0; left: 50%; width: 1.5px; }
+.tzg::after { left: 0; right: 0; top: 50%; height: 1.5px; }
+.tzg span {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 26px; color: var(--accent);
+}
+
+.lesson-meta { flex: 1; min-width: 0; }
+.lesson-title {
+  font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 19px; margin: 0 0 4px;
+}
+.lesson-blurb { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+.lesson-foot {
+  margin-top: 8px; font-size: 12px; color: var(--ink-soft);
+  display: flex; gap: 12px; align-items: center;
+}
+.stamp-dot {
+  width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-soft); display: inline-block;
+}
+.stamp-dot.done { background: var(--accent); border-color: var(--accent); }
+
+/* ===== Reader screen ===== */
+#reader { display: none; padding: 26px 0 100px; }
+.bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0 22px; gap: 14px; flex-wrap: wrap;
+}
+.back-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif; font-size: 14px; color: var(--ink-soft);
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: var(--radius);
+}
+.back-btn:hover { color: var(--ink); }
+.back-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.bar-controls { display: flex; align-items: center; gap: 16px; }
+.font-ctrl { display: flex; align-items: center; gap: 4px; }
+.font-ctrl button {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--rule);
+  background: var(--card-bg); color: var(--ink); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.font-ctrl button:hover { border-color: var(--accent); color: var(--accent); }
+.font-ctrl button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mini-swatches { display: flex; gap: 6px; }
+.mini-swatches .swatch { width: 18px; height: 18px; }
+
+.title-block { position: relative; margin-bottom: 8px; }
+.reader-ordinal {
+  font-family: 'Noto Serif SC', serif; font-size: 13px; letter-spacing: .18em;
+  color: var(--accent); text-transform: uppercase; margin: 0 0 6px;
+}
+.reader-title {
+  font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 30px; margin: 0;
+}
+.reader-rule { height: 1px; background: var(--rule); margin: 18px 0 30px; }
+
+.reading-paper { position: relative; padding: 6px 0 10px; }
+body[data-theme="notebook"] .reading-paper {
+  background-image:
+    repeating-linear-gradient(var(--bg-alt) 0 0),
+    repeating-linear-gradient(0deg, transparent 0 37px, var(--grid-line) 37px 38px);
+  background-blend-mode: normal;
+  padding: 14px 18px; border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--grid-line);
+}
+
+p.para {
+  font-family: 'Noto Serif SC', serif;
+  font-size: calc(1.2rem * var(--font-scale));
+  line-height: 2.15;
+  letter-spacing: .02em;
+  margin: 0 0 1.6em;
+  opacity: .32;
+  transition: opacity .5s ease;
+}
+p.para.active { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  p.para { opacity: 1 !important; transition: none; }
+}
+
+.finish-row { margin-top: 20px; display: flex; justify-content: center; }
+.finish-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.finish-btn {
+  font-family: 'Noto Sans SC', sans-serif; font-size: 14px; font-weight: 500;
+  background: var(--accent); color: var(--bg); border: none; border-radius: 999px;
+  padding: 12px 26px; cursor: pointer; letter-spacing: .04em;
+  transition: transform .2s ease, opacity .2s ease, background .2s ease;
+}
+.finish-btn:hover { transform: translateY(-2px); }
+.finish-btn.done { background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--rule); }
+.finish-btn.done:hover { color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.finish-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.finish-hint { font-size: 12px; color: var(--ink-soft); margin: 0; min-height: 14px; }
+
+.stamp {
+  position: absolute; top: -6px; right: 0;
+  width: 84px; height: 84px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+  opacity: 0; transform: scale(1.6) rotate(-14deg);
+  pointer-events: none;
+}
+.stamp.show {
+  animation: stampIn .5s cubic-bezier(.2,1.6,.4,1) forwards;
+}
+.stamp.hide {
+  animation: stampOut .3s ease forwards;
+}
+@keyframes stampIn {
+  0% { opacity: 0; transform: scale(1.7) rotate(-18deg); }
+  60% { opacity: 1; transform: scale(.92) rotate(-8deg); }
+  100% { opacity: .92; transform: scale(1) rotate(-8deg); }
+}
+@keyframes stampOut {
+  0% { opacity: .92; transform: scale(1) rotate(-8deg); }
+  100% { opacity: 0; transform: scale(.8) rotate(-2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp.show { animation: none; opacity: .92; transform: scale(1) rotate(-8deg); }
+  .stamp.hide { animation: none; opacity: 0; }
+}
+.stamp svg { width: 100%; height: 100%; }
+
+.nav-row {
+  display: flex; justify-content: space-between; margin-top: 40px;
+  border-top: 1px solid var(--rule); padding-top: 20px;
+}
+.nav-link {
+  background: none; border: none; cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 2px;
+  padding: 4px;
+}
+.nav-link span.cn { font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--ink); }
+.nav-link:hover span.cn { color: var(--accent); }
+.nav-link:disabled { visibility: hidden; }
+.nav-link.next { text-align: right; align-items: flex-end; }
+.nav-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 480px) {
+  .brush-title { font-size: 72px; }
+  .lesson-card { flex-direction: row; padding: 14px; }
+  .reader-title { font-size: 24px; }
+}
+</style>
+</head>
+<body data-theme="paper">
+<div id="app">
+
+  <!-- ===== Cover ===== -->
+  <section id="cover">
+    <div class="wrap">
+      <div class="cover-head">
+        <p class="brush-title">读</p>
+        <p class="cover-sub">汉语读本 · 三课</p>
+        <div class="theme-row" id="themeRow" role="group" aria-label="选择主题"></div>
+      </div>
+      <div class="lesson-grid" id="lessonGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== Reader ===== -->
+  <section id="reader">
+    <div class="wrap">
+      <div class="bar">
+        <button class="back-btn" id="backBtn" aria-label="返回目录">← 目录</button>
+        <div class="bar-controls">
+          <div class="mini-swatches" id="miniThemeRow" role="group" aria-label="切换主题"></div>
+          <div class="font-ctrl">
+            <button id="fontMinus" aria-label="缩小字号">A−</button>
+            <button id="fontPlus" aria-label="放大字号">A+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="title-block">
+        <p class="reader-ordinal" id="readerOrdinalLabel"></p>
+        <h1 class="reader-title" id="readerTitle"></h1>
+        <div class="stamp" id="stamp" aria-hidden="true">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="3"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="50" y="46" text-anchor="middle" font-family="'Ma Shan Zheng', cursive" font-size="26" fill="currentColor">读毕</text>
+            <text x="50" y="66" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="9" fill="currentColor" id="stampDate"></text>
+          </svg>
+        </div>
+      </div>
+      <div class="reader-rule"></div>
+
+      <div class="reading-paper" id="readingPaper"></div>
+
+      <div class="finish-row">
+        <div class="finish-col">
+          <button class="finish-btn" id="finishBtn">标记为读完</button>
+          <p class="finish-hint" id="finishHint"></p>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-link prev" id="prevBtn">
+          <span>上一课</span>
+          <span class="cn" id="prevTitle"></span>
+        </button>
+        <button class="nav-link next" id="nextBtn">
+          <span>下一课</span>
+          <span class="cn" id="nextTitle"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  const LESSONS = [
+    {
+      id: 1, ordinal: '一',
+      title: '我的一周',
+      blurb: '从星期天的早饭到公园里的秋天，普通一周的几段记录。',
+      paragraphs: [
+        '今天星期天，我起床不早。我和家人一起吃早饭。妈妈做面条儿，爸爸喝牛奶。今天天气不错，有太阳，我觉得非常高兴。',
+        '午饭以后，我和朋友出去。我们坐地铁去商场。商场非常大，人很多。我想买新上衣和黑色裤子。朋友喜欢看鞋。走路让我们觉得累。我们去买咖啡和蛋糕。我们坐下来聊天儿。我喜欢读书和听音乐，他喜欢打篮球。',
+        '晚上，我们回去吃晚饭。晚饭是米饭、鱼和菜。吃完，我看电视。我觉得有点儿累，我去睡觉。',
+        '昨天是星期一。早上我去上学。学校离家不远，我经常走路去学校，有时坐公交车。上午我们有汉语课和数学课。老师教新字和读课文。我觉得汉字不太难，但是写汉字有点儿累。中午，我和同学一起吃饭。我们吃米饭和鸡蛋。下午没有课，我回房间休息。我用电脑上网，看电影。电影非常有意思。晚上我做作业，复习课文。虽然忙，但是觉得很快乐。',
+        '我的爱好是运动和旅游。秋天天气凉快，我和家人去公园。公园里面有草地和树，非常漂亮。我们看见鸟，还拍照。弟弟喜欢跑步，妹妹喜欢画画。我觉得在公园走路非常舒服。希望明年我们可以去外国旅游。'
+      ]
+    },
+    {
+      id: 2, ordinal: '二',
+      title: '动物园的一天',
+      blurb: '和姐姐去看大熊猫，在饭馆吃饭，路上遇见一个迷路的小孩儿。',
+      paragraphs: [
+        '周末，天气非常晴。我和姐姐去动物园。我们坐地铁过去。地铁里人不多。动物园的门票不贵。',
+        '进去以后，我们先看见大熊猫。大熊猫非常可爱，在吃东西。好多人在拍照。然后我们去看鸟。鸟在树上唱歌，我觉得很好听。',
+        '走了一会儿，我觉得有点儿累。我们在旁边坐下来休息。姐姐去商店买矿泉水。我喝了一瓶水。',
+        '中午，我们出去吃饭。附近有一家饭馆。我们点了一盘肉和两个菜，还喝了红茶。菜很好吃，我们吃得饱。',
+        '下午，我们又进去看别的动物。看见一个小孩儿在哭。他找不到妈妈，很着急。工作人员帮助了他。',
+        '后来，我们坐公交车回家。虽然身体累，但是心里很快乐。晚上，我写日记。',
+        '今天下雨，天气阴。我在家看书，不出去。我觉得这样的周末很有意思。'
+      ]
+    },
+    {
+      id: 3, ordinal: '三',
+      title: '帮朋友搬家',
+      blurb: '坐出租车去帮朋友搬新家，一起吃饭、打扫，最后收到一本书作礼物。',
+      paragraphs: [
+        '今天星期天，天气非常好。朋友搬家，我去帮忙。他的新家在那边，离学校比较远。我坐出租车过去，大概用了二十分钟。',
+        '到以后，看见好多人在工作。有大人，也有小孩儿。我们把箱子、衣服和书搬上去。楼很高，没有电梯，走路上去。走了两次才搬完。我觉得累，但是高兴能帮助朋友。',
+        '中午，朋友请客，在附近的饭馆吃饭。饭馆的环境很干净，人不多，很安静。点了很多菜，有肉，有鱼，还有鸡蛋。大家一边吃饭一边聊天儿。朋友说，房子虽然有点儿旧，但是很大，而且方便。旁边就有超市和公园，买东西、运动都很近。',
+        '吃完饭，大家一起打扫房间。女朋友在放衣服。下午四点，房间终于变干净了。我们坐下来休息，喝水。朋友对我说"谢谢"，送给我一个礼物。是一本关于历史的书，我很喜欢。',
+        '晚上我回家，洗澡，觉得很舒服。虽然今天很忙，但是很有意思。'
+      ]
+    },
+    {
+    id: 4, ordinal: '四',
+    title: '去医院看病',
+    blurb: '晚上发烧，爸爸带我去医院看病，医生说是感冒，开了药回家休息。',
+    paragraphs: [
+        '今天下雨，天气阴。昨天晚上，我开始觉得冷，而且头很疼。妈妈说我发烧了。今天早上，爸爸带我去医院看病。医院里面人很多，我们等了一个小时。终于医生看我了。',
+        '医生问我：“你怎么了？哪里不舒服？”我告诉医生：“我头疼，觉得累，不想吃饭。”医生检查了我的身体，说我感冒了，没关系。医生让我多喝水，多休息，还给我开了药。我们去药店买药。',
+        '回家以后，我吃药，睡觉。今天一天都没有出门。'
+    ]
+    },
+    {
+    id: 5, ordinal: '五',
+    title: '去外国旅游',
+    blurb: '坐飞机去外国旅游，到酒店休息，吃晚饭，准备明天的行程。',
+    paragraphs: [
+        '下个星期，我要去外国旅游。我去机场坐飞机。机场非常大，里面有很多外国人。我检查行李，带了一个大箱子和一个小书包。飞机马上要起飞了，我坐在椅子上。在飞机上，我看了一本电子书，还睡了一会儿。',
+        '飞了三个小时，终于到了。出机场以后，我打车去酒店。酒店房间很干净，也很舒服。把行李放在房间里面以后，我出去吃饭。',
+        '我在附近的饭馆点了一盘鱼和一碗米饭。吃完饭，我回酒店洗澡，准备休息。明天我要开始旅游，我希望天气好。'
+    ]
+    },
+    {
+    id: 6, ordinal: '六',
+    title: '开学第一天',
+    blurb: '新学期开学，去学校上课，学习数学和汉语，下课和同学一起玩。',
+    paragraphs: [
+        '今天开学，我是中学生了。早上起来，吃完早饭，我拿书包去学校。学校离我家近，我经常骑自行车去学校，有时坐公交车。到了学校，我进教室，看见好多同学。大家都在聊天，非常高兴。',
+        '第一节是数学课。数学老师很认真，教得很好。我听懂了，但是做题还是有点难。下课后，我们去球场上玩。有的同学打篮球，有的踢足球。我不太会踢足球，所以在旁边读书。',
+        '中午我们在学校附近吃饭。下午有汉语课和外语课。我觉得学习外语很有意思。下午放学回家，我先做作业，然后复习课文。'
+    ]
+    },
+    {
+    id: 7, ordinal: '七',
+    title: '去朋友家做客',
+    blurb: '去朋友新家做客，带礼物，吃了一顿开心的饭。',
+    paragraphs: [
+        '上个周末，我们去朋友家做客。朋友刚搬家，新家在一个小区里，环境很安静。我们带了水果和牛奶作为礼物。到了门口，朋友热情地欢迎我们。进屋以后，我们觉得房间很大。',
+        '朋友的妻子在里面做饭。我们坐在沙发上聊天。朋友的小孩儿非常可爱，一直在跑来跑去。过了一会儿，饭做好了。我们一起吃饭。菜很多，有肉、有鸡蛋，还有菜。大家一边吃一边说话，非常开心。',
+        '吃完饭，我们一起喝茶。晚上九点，我们回去。今天觉得非常满意。'
+    ]
+    },
+    {
+    id: 8, ordinal: '八',
+    title: '喜爱运动',
+    blurb: '介绍自己喜爱运动，经常游泳和跑步，觉得身体健康很重要。',
+    paragraphs: [
+        '我非常喜爱运动。我的爱好是游泳和打网球。夏天，我常常去游泳馆游泳。游泳可以锻炼身体，让人感到凉快。冬天太冷，我不爱出去，就在家里做运动。有时候我也会去公园跑步。',
+        '公园里有很多人在锻炼，有老人，也有年轻人。我觉得身体健康非常重要。如果不运动，人容易生病。除了运动，还要注意吃饭。我经常吃水果和鱼，很少吃太甜的东西。',
+        '我的爷爷今年八十岁了，他身体还很健康，因为他每天早上都去公园走路。我也希望我老了以后，身体能像他一样好。'
+    ]
+    },
+    {
+    id: 9, ordinal: '九',
+    title: '留学生学习中文',
+    blurb: '作为留学生学习中文，觉得汉字难但有意思，课后经常复习和聊天。',
+    paragraphs: [
+        '我是一个留学生，我来中国学习中文。我觉得中文有点难，特别是汉字。汉字很多，而且有的字难写。但是我觉得汉语非常有意思。我的老师是一位年轻的女老师，她很认真，教得很好。',
+        '每天上课，我们先读课文，然后学习新字。老师让我们用新学的字写句子，还要练习说话。下课以后，我回房间复习。我经常查字典，也用手机上的词典。',
+        '有时候我会遇到中国朋友，我们一起聊天，这对提高我的中文水平很有帮助。虽然学习很累，但是每次我听懂中国话，或者看懂中文书的时候，我都觉得非常高兴。'
+    ]
+    },
+    {
+    id: 10, ordinal: '十',
+    title: '下雨天在家',
+    blurb: '下雨没出门，在家帮妈妈打扫，上网看新闻发邮件。',
+    paragraphs: [
+        '今天下雨，天气阴，外面刮风。我不想出门，就在家里休息。早上我起得很晚，九点才起床。妈妈已经做好了早饭，我吃了面包，喝了牛奶。吃完饭，我帮妈妈打扫屋子。我扫地、洗桌子，让房间干净。',
+        '下午，我坐在电脑前上网。我看了新闻，还给外国朋友发了邮件。爸爸在里面看电视，妈妈在洗衣服。晚上，我觉得有点饿，妈妈给我做了面条儿。',
+        '吃完面条儿，我看了一会儿书。今天虽然没有出去，但是在家帮忙做事情，也觉得很快乐。'
+    ]
+    },
+    {
+    id: 11, ordinal: '十一',
+    title: '找手机',
+    blurb: '早上出门找不到手机，很着急，最后在沙发上找到了。',
+    paragraphs: [
+        '昨天早上，我准备出门上学，但是找不到我的手机。我很着急。我在桌子上找，没有。在床上找，也没有。我问妈妈：“妈妈，你看见我的手机了吗？”妈妈说：“我没有看见，你是不是放在书包里了？”',
+        '我打开书包看，还是没有。后来，爸爸告诉我，他昨天晚上看见手机在沙发上。我去客厅一看，手机真的在沙发上！我总是忘记东西放在哪里。以后我一定要小心，把东西放好。',
+        '找到手机以后，我马上出门，跑着去车站。好我没有迟到。'
+    ]
+    },
+    {
+    id: 12, ordinal: '十二',
+    title: '四个季节',
+    blurb: '介绍一年四季的天气变化和特点，表达对秋天的喜爱。',
+    paragraphs: [
+        '一年有四个季节，春天、夏天、秋天和冬天。春天天气不冷，草变绿色了，花也开花了，非常漂亮。大家喜欢在春天去公园玩。夏天非常热，太阳很大。我们经常吃冰激凌、喝矿泉水。有时候去海边游泳。',
+        '秋天天气凉快，树变成黄色了。这是一个好的季节，有很多好吃的水果，比如苹果、香蕉和西瓜。冬天很冷，有时候会下雪。大家可以穿大衣、穿裤子。小孩儿喜欢在雪里玩雪。',
+        '我最喜欢秋天，因为天气最舒服。'
+    ]
+    },
+    {
+    id: 13, ordinal: '十三',
+    title: '去动物园',
+    blurb: '坐公交车去动物园看大熊猫和鸟，拍了照片，走得很累但快乐。',
+    paragraphs: [
+        '上个星期天，天气晴。爸爸妈妈带我去动物园。我们坐公交车去，路上用了一个小时。到了动物园门口，买完门票，我们就进去了。我们先去看大熊猫。大熊猫非常有名，它是黑色和白色的，非常可爱，正在吃东西。',
+        '然后我们去看了鸟。鸟在树上唱。我还看见了马和羊。中午我们在动物园里面的饭馆吃饭。下午我们又看了一些动物，还拍了很多照片。',
+        '下午四点，我们才离开动物园。今天虽然走得腿很疼，但是非常快乐。'
+    ]
+    },
+    {
+    id: 14, ordinal: '十四',
+    title: '准备考试',
+    blurb: '快考试了，每天认真复习，不会的题问老师，希望考好去旅游。',
+    paragraphs: [
+        '下个星期我们有考试。这几天大家都在认真复习。我每天早上很早就起床，读课文、记字。数学比较难，有很多难题。我有些题不会做，就去问老师。老师给我讲，我终于明白了。',
+        '除了学习，我也要注意休息，不能太晚睡觉。妈妈让我多吃水果和肉，这样身体好，考试才能考得好。',
+        '我希望这次考试能考得好。考完试以后就是假期了，我打算去旅游，好好休息一下。'
+    ]
+    },
+    {
+    id: 15, ordinal: '十五',
+    title: '去超市买东西',
+    blurb: '帮妈妈去超市买菜、鸡蛋、肉等，东西有点重，走回家。',
+    paragraphs: [
+        '下午，妈妈让我去超市买东西。她给我一张纸，上面写着要买的东西：菜、鸡蛋、肉、筷子和矿泉水。我拿着钱，走路去超市。超市里人很多，大家都拿着东西。',
+        '我先去拿了矿泉水，觉得有点累。然后我去买肉和菜。最后我找到了筷子。买完以后，我去那里给钱。一共花了八十块钱。那里的人问我要不要包。我说不要。',
+        '我把东西放在书包里，走回家。妈妈说我是个好孩子。'
+    ]
+    },
+    {
+    id: 16, ordinal: '十六',
+    title: '遇见老同学',
+    blurb: '下班路上遇见五年没见的高中同学，一起喝咖啡聊天，回忆过去。',
+    paragraphs: [
+        '昨天下午，我下班以后，打算去书店买一本新书。走在路上，突然听见有人叫我的姓名。我看右边，看见一个男人。开始我不认识，后来才想，他是我高中同学！我们已经五年没见面了。他变化很大，以前很瘦，现在有点胖了。',
+        '我们非常高兴，找了一家咖啡店坐下来聊天。他告诉我，他现在在一家公司做经理，工作很忙。我也告诉他我的事情。我们聊了以前在学校的时候，觉得那时候真快乐。',
+        '聊了两个多小时，天都黑了。我们记下了手机号码。希望以后能经常见面。'
+    ]
+    },
+    {
+    id: 17, ordinal: '十七',
+    title: '找工作',
+    blurb: '快毕业了在找工作，父母有不同建议，但我希望做旅游相关的工作。',
+    paragraphs: [
+        '我在大学学习。我正在找工作。我学的是中文。爸爸希望我当老师，因为老师工作不错。妈妈希望我去银行工作，因为钱多。但是我的希望是做一份关于旅游的工作。我喜欢旅游，喜欢认识不同的人。',
+        '我觉得如果做喜欢的工作，虽然可能有点累，但是心里会觉得有意思。为了找到好工作，我正在努力准备。我写了信，还在网上发了邮件。',
+        '希望能收到邮件。'
+    ]
+    },
+    {
+    id: 18, ordinal: '十八',
+    title: '在家做饭',
+    blurb: '妈妈下班晚，我尝试做鸡蛋和鱼，虽然难但做好了，妈妈很高兴。',
+    paragraphs: [
+        '今天晚上，我在家做饭。妈妈下班晚，所以我准备帮忙。我先去超市买了一些菜和肉。回来以后，我洗菜、准备肉。我打算做两个菜。一个是鸡蛋和菜。另一个是鱼。做鱼有点难，我怕做不好。',
+        '但是我还是做了。我开始做，一边做一边看手机上的介绍。终于做完了。妈妈回来以后，看见桌子上的饭和菜，非常高兴。我们坐下来一起吃。',
+        '妈妈觉得不错，我听了很开心。以后我要多学习做饭。'
+    ]
+    },
+    {
+    id: 19, ordinal: '十九',
+    title: '下雨没带伞',
+    blurb: '早上晴天下午下雨没带伞，淋湿了回家，感觉要感冒。',
+    paragraphs: [
+        '这里的天气变化很多。早上还是晴，下午就下雨了。因为没有带伞，我只能在车站等。雨下得很大，风也很大。路上的人都在跑。',
+        '过了一会儿，雨不大了。我马上走回家。衣服和鞋子上有水。回家以后，我马上换衣服，洗了一个澡。妈妈给我水。我觉得感冒了，有点头疼。',
+        '妈妈让我吃药，早点休息。明天我希望天气能好起来。'
+    ]
+    },
+    {
+    id: 20, ordinal: '二十',
+    title: '看电影',
+    blurb: '晚上和男朋友去商场看电影，买了零食，电影很有意思。',
+    paragraphs: [
+        '星期五晚上，我和男朋友去电影院看电影。这是新电影，关于两个人的。我们以前在网上买了票。电影院在商场里面。到了以后，我们先去买了矿泉水和面包。',
+        '进去的时候，电影已经开始了。里面很黑，我们找了自己的椅子坐下来。电影非常有意思，大家都在笑。有的时候，我觉得很有意思。',
+        '看完电影，已经十点了。我们走出商场，外面人很少。我们打车回家。今天晚上过得很快乐。'
+    ]
+    },
+    {
+    id: 21, ordinal: '二十一',
+    title: '学开车',
+    blurb: '跟爸爸学开车，一开始很害怕，经过练习现在好多了。',
+    paragraphs: [
+        '我最近在学开车。爸爸有一辆旧车，他教我。第一次上车的时候，我非常害怕。手不知道放在哪里。爸爸说不要着急，慢开。',
+        '我先练习开车，然后在路上慢慢走。看到前面有车，我就停。有一次，差不多到树前面。爸爸马上帮我。经过几次练习，我觉得好多了。',
+        '现在我可以没有人的地方自己开车了。虽然还不好，但是我觉得可以。'
+    ]
+    },
+    {
+    id: 22, ordinal: '二十二',
+    title: '搬家的一天',
+    blurb: '家里搬家，东西很多很累，打扫完新家点外卖，忙碌又快乐。',
+    paragraphs: [
+        '上个星期，我们家搬家了。旧房子有点小，而且离学校远。新家在小区的中间，环境很安静。搬家那天，爸爸叫了一辆出租车。我们把箱子、衣服和书都搬下去。东西真多，觉得累。',
+        '到了新家，我们开始打扫屋子。我洗桌子。妈妈把衣服放在房间里面。弟弟在旁边玩。晚上的时候，我们终于做完了。虽然大家都很累，但是看到新家这么干净，都觉得很满意。',
+        '我们点了外卖作为晚饭。这真是忙碌又快乐的一天。'
+    ]
+    }
+  ];
+
+  const THEMES = [
+    { id: 'paper', label: '宣纸' },
+    { id: 'ink', label: '水墨' },
+    { id: 'dusk', label: '黄昏' },
+    { id: 'notebook', label: '习字本' }
+  ];
+
+  let state = { theme: 'paper', fontScale: 1, completed: [] };
+  let currentLesson = null;
+  let observer = null;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const $ = (sel) => document.querySelector(sel);
+
+  function estMinutes(paragraphs) {
+    const chars = paragraphs.join('').length;
+    return Math.max(1, Math.round(chars / 90));
+  }
+
+  async function loadSettings() {
+    try {
+      const res = await window.storage.get('reader-settings', false);
+      if (res && res.value) {
+        const parsed = JSON.parse(res.value);
+        state = Object.assign(state, parsed);
+      }
+    } catch (e) { /* no saved settings yet, use defaults */ }
+    applyTheme(state.theme);
+    applyFontScale(state.fontScale);
+  }
+
+  async function saveSettings() {
+    try {
+      await window.storage.set('reader-settings', JSON.stringify(state), false);
+    } catch (e) { /* saving failed silently, non-critical */ }
+  }
+
+  function applyTheme(name) {
+    state.theme = name;
+    document.body.setAttribute('data-theme', name);
+    document.querySelectorAll('.swatch').forEach(btn => {
+      btn.setAttribute('aria-pressed', btn.dataset.theme === name ? 'true' : 'false');
+    });
+  }
+
+  function applyFontScale(scale) {
+    state.fontScale = Math.min(1.4, Math.max(0.85, scale));
+    document.documentElement.style.setProperty('--font-scale', state.fontScale);
+  }
+
+  function buildThemeRow(container, small) {
+    container.innerHTML = '';
+    THEMES.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'swatch sw-' + t.id;
+      b.dataset.theme = t.id;
+      b.setAttribute('aria-label', t.label);
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { applyTheme(t.id); saveSettings(); });
+      container.appendChild(b);
+    });
+  }
+
+  function renderCover() {
+    const grid = $('#lessonGrid');
+    grid.innerHTML = '';
+    LESSONS.forEach((lesson, idx) => {
+      const done = state.completed.includes(lesson.id);
+      const card = document.createElement('button');
+      card.className = 'lesson-card';
+      card.innerHTML = `
+        <div class="tzg"><span>${lesson.ordinal}</span></div>
+        <div class="lesson-meta">
+          <p class="lesson-title">第${lesson.ordinal}课 · ${lesson.title}</p>
+          <p class="lesson-blurb">${lesson.blurb}</p>
+          <div class="lesson-foot">
+            <span><span class="stamp-dot ${done ? 'done' : ''}"></span> ${done ? '已读完' : '未读'}</span>
+            <span>约 ${estMinutes(lesson.paragraphs)} 分钟</span>
+          </div>
+        </div>`;
+      card.addEventListener('click', () => openLesson(idx));
+      grid.appendChild(card);
+    });
+  }
+
+  function openLesson(index) {
+    currentLesson = index;
+    const lesson = LESSONS[index];
+    $('#cover').style.display = 'none';
+    $('#reader').style.display = 'block';
+    window.scrollTo(0, 0);
+
+    $('#readerOrdinalLabel').textContent = '第 ' + lesson.ordinal + ' 课';
+    $('#readerTitle').textContent = lesson.title;
+
+    const paper = $('#readingPaper');
+    paper.innerHTML = '';
+    lesson.paragraphs.forEach((text, i) => {
+      const p = document.createElement('p');
+      p.className = 'para';
+      p.textContent = text;
+      paper.appendChild(p);
+    });
+
+    setupObserver(paper);
+
+    const stamp = $('#stamp');
+    stamp.classList.remove('show', 'hide');
+    const done = state.completed.includes(lesson.id);
+    if (done) {
+      stamp.classList.add('show');
+      $('#stampDate').textContent = '已读';
+    }
+    updateFinishBtn(done);
+
+    const prev = LESSONS[index - 1];
+    const next = LESSONS[index + 1];
+    $('#prevBtn').disabled = !prev;
+    $('#nextBtn').disabled = !next;
+    $('#prevTitle').textContent = prev ? prev.title : '';
+    $('#nextTitle').textContent = next ? next.title : '';
+  }
+
+  function closeLesson() {
+    if (observer) observer.disconnect();
+    $('#reader').style.display = 'none';
+    $('#cover').style.display = 'block';
+    renderCover();
+    window.scrollTo(0, 0);
+  }
+
+  function setupObserver(paper) {
+    if (observer) observer.disconnect();
+    const paras = paper.querySelectorAll('.para');
+    if (reduceMotion) {
+      paras.forEach(p => p.classList.add('active'));
+      return;
+    }
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        entry.target.classList.toggle('active', entry.isIntersecting);
+      });
+    }, { root: null, rootMargin: '-35% 0px -40% 0px', threshold: 0 });
+    paras.forEach(p => observer.observe(p));
+  }
+
+  function updateFinishBtn(done) {
+    const btn = $('#finishBtn');
+    btn.classList.toggle('done', done);
+    btn.textContent = done ? '取消标记' : '标记为读完';
+    $('#finishHint').textContent = done ? '再点一次可以取消这个标记' : '';
+  }
+
+  function toggleComplete() {
+    const lesson = LESSONS[currentLesson];
+    const stamp = $('#stamp');
+    const nowDone = !state.completed.includes(lesson.id);
+
+    state.completed = nowDone
+      ? state.completed.concat(lesson.id)
+      : state.completed.filter(id => id !== lesson.id);
+    saveSettings();
+    updateFinishBtn(nowDone);
+
+    if (nowDone) {
+      const d = new Date();
+      $('#stampDate').textContent = (d.getMonth() + 1) + '/' + d.getDate();
+      stamp.classList.remove('hide');
+      stamp.classList.remove('show');
+      void stamp.offsetWidth;
+      stamp.classList.add('show');
+    } else {
+      stamp.classList.remove('show');
+      stamp.classList.add('hide');
+    }
+  }
+
+  // wire up
+  buildThemeRow($('#themeRow'));
+  buildThemeRow($('#miniThemeRow'));
+  $('#backBtn').addEventListener('click', closeLesson);
+  $('#finishBtn').addEventListener('click', toggleComplete);
+  $('#fontMinus').addEventListener('click', () => { applyFontScale(state.fontScale - 0.1); saveSettings(); });
+  $('#fontPlus').addEventListener('click', () => { applyFontScale(state.fontScale + 0.1); saveSettings(); });
+  $('#prevBtn').addEventListener('click', () => { if (currentLesson > 0) openLesson(currentLesson - 1); });
+  $('#nextBtn').addEventListener('click', () => { if (currentLesson < LESSONS.length - 1) openLesson(currentLesson + 1); });
+
+  loadSettings().then(renderCover);
+})();
+</script>
+</body>
+</html>
